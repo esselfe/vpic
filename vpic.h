@@ -2,7 +2,7 @@
 #define VPIC_H 1
 
 extern const char *vpic_version_string;
-extern unsigned int loopend, verbose;
+extern unsigned int loopend, debug, verbose;
 extern char *tmpdir;
 
 // from event.c
@@ -22,8 +22,8 @@ void vpic_fb_draw(void);
 struct ImageNode {
 	unsigned int type;
     struct ImageNode *prev, *next;
-	char *fullname;
-    char *filename;
+	struct Thumbnail *thumbnail;
+    char *filename, *fullname;
 	char *thumbnail_filename;
 	float ratio;
 	unsigned int original_width, original_height;
@@ -47,6 +47,16 @@ void vpicImageAddUnsupported(char *dirname, char *filename);
 void vpicImageLoadDataPNG(struct ImageNode *in);
 
 // from jpg.c
+#include <jpeglib.h>
+#include <setjmp.h>
+struct my_error_mgr {
+  struct jpeg_error_mgr pub;    /* "public" fields */
+
+  jmp_buf setjmp_buffer;        /* for return to caller */
+};
+typedef struct my_error_mgr *my_error_ptr;
+void my_error_exit(j_common_ptr cinfo);
+
 void vpicJPGLoad(struct ImageNode *in);
 
 // from png.c
@@ -58,6 +68,25 @@ extern unsigned int fps;
 extern char strfps[20];
 
 void vpicRender(void);
+
+// from thumbnail.c
+struct Thumbnail {
+	char *filename, *fullname;
+	float ratio;
+	unsigned int width, height;
+	unsigned int row_bytes, x_row_bytes;
+	unsigned int components;
+	unsigned int file_size;
+	unsigned int data_size;
+	char *data;
+	XImage *ximage;
+};
+
+void vpicThumbnailGenerate(char *src, char *dst);
+void vpicThumbnailCreateJPG(struct ImageNode *in);
+void vpicThumbnailCreatePNG(struct ImageNode *in);
+void vpicThumbnailCreateDirectory(struct ImageNode *in);
+void vpicThumbnailCreateUnsupported(struct ImageNode *in);
 
 // from window.c
 #include <X11/Xutil.h>

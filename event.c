@@ -16,6 +16,8 @@ void vpicEvent(void) {
                 loopend = 1;
 			else if (xevent.xkey.keycode == 32) // o
 				draw_once = 1;
+			else if(xevent.xkey.keycode == 40) // d
+				debug = !debug;
 			else if (xevent.xkey.keycode == 55) // v
 				verbose = !verbose;
             break;

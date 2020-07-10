@@ -8,12 +8,12 @@
 #include "vpic.h"
 
 void vpicPNGLoad(struct ImageNode *in) {
-	if (verbose)
-		printf("\nLoading: %s\n", in->filename);
+	if (debug)
+		printf("## vpicPNGLoad(): loading %s\n", in->filename);
 	
 	FILE *fp = fopen(in->fullname, "rb");
 	if (fp == NULL) {
-		fprintf(stderr, "vpic error: Cannot open %s: %s\n", in->filename, strerror(errno));
+		fprintf(stderr, "vpic error: cannot open %s: %s\n", in->filename, strerror(errno));
 		in->original_width = 100;
 		in->original_height = 100;
 		in->row_bytes = 100*3;
@@ -51,22 +51,22 @@ void vpicPNGLoad(struct ImageNode *in) {
 	case PNG_COLOR_TYPE_PALETTE:
 		components = 3;
 		if (verbose)
-			printf("color type: palette\n");
+			printf("    color type: palette\n");
 		break;
 	case PNG_COLOR_TYPE_RGB:
 		components = 3;
 		if (verbose)
-			printf("color type: RGB\n");
+			printf("    color type: RGB\n");
 		break;
 	case PNG_COLOR_TYPE_RGB_ALPHA:
 		components = 4;
 		if (verbose)
-			printf("color type: RGBA\n");
+			printf("    color type: RGBA\n");
 		break;
 	case PNG_COLOR_TYPE_GRAY_ALPHA:
 		components = 2;
 		if (verbose)
-			printf("color type: gray alpha\n");
+			printf("    color type: gray alpha\n");
 		break;
 	default:
 		components = 3;
@@ -82,13 +82,13 @@ void vpicPNGLoad(struct ImageNode *in) {
 	memset(in->data, 0, in->data_size);
 	if (verbose) {
 		unsigned int bit_depth = png_get_bit_depth(png, info);
-		printf("bit_depth: %u\n", bit_depth);
-		printf("components: %u\n", components);
-		printf("width: %u height: %u\n", in->original_width, in->original_height);
-		printf("image size: %u\n", in->original_width * in->original_height * components);
-		printf("data size: %u\n", in->data_size);
-		printf("row bytes: %u\n", in->row_bytes);
-		printf("xrow bytes: %u\n", in->xrow_bytes);
+		printf("    bit_depth: %u\n", bit_depth);
+		printf("    components: %u\n", components);
+		printf("    width: %u height: %u\n", in->original_width, in->original_height);
+		printf("    image size: %u\n", in->original_width * in->original_height * components);
+		printf("    data size: %u\n", in->data_size);
+		printf("    row bytes: %u\n", in->row_bytes);
+		printf("    xrow bytes: %u\n", in->xrow_bytes);
 	}
 
 	png_bytepp rows = png_get_rows(png, info);
@@ -115,5 +115,8 @@ void vpicPNGLoad(struct ImageNode *in) {
 	
 	png_destroy_info_struct(png, &info);
 	png_destroy_read_struct(&png, NULL, NULL);
+
+	if (debug)
+		printf("## vpicPNGLoad(): end\n");
 }
 

@@ -14,12 +14,12 @@
 struct ImageList rootImageList;
 
 int vpicImageLoadFromDirectory(char *dirname) {
-	if (verbose)
-		printf("vpicImageLoadFromDirectory(): Loading %s\n", dirname);
+	if (debug)
+		printf("## vpicImageLoadFromDirectory(): loading %s\n", dirname);
 	
 	DIR *dir = opendir(dirname);
 	if (dir == NULL) {
-		fprintf(stderr, "vpic error: Cannot open %s: %s\n", dirname, strerror(errno));
+		fprintf(stderr, "vpic error: cannot open %s: %s\n", dirname, strerror(errno));
 		return 1;
 	}
 	
@@ -37,7 +37,7 @@ int vpicImageLoadFromDirectory(char *dirname) {
 		if (de == NULL && errno == 0)
 			break;
 		else if (de == NULL && errno != 0) {
-			fprintf(stderr, "vpic error: Cannot open entry #%u from %s: %s\n", 
+			fprintf(stderr, "vpic error: cannot open entry #%u from %s: %s\n", 
 				cnt, dirname, strerror(errno));
 			continue;
 		}
@@ -66,10 +66,17 @@ int vpicImageLoadFromDirectory(char *dirname) {
 	}
 
 	magic_close(mg);
+
+	if (debug)
+		printf("## vpicImageLoadFromDirectory(): end\n");
+	
 	return 0;
 }
 
 void vpicImageAddJPG(char *dirname, char *filename) {
+	if (debug)
+		printf("\n## vpicImageAddJPG(): processing %s\n", filename);
+	
 	struct ImageNode *in = malloc(sizeof(struct ImageNode));
 	in->type = IMAGE_TYPE_JPG;
 	if (rootImageList.first_image == NULL) {
@@ -95,16 +102,23 @@ void vpicImageAddJPG(char *dirname, char *filename) {
 	in->data_thumbnail_size = 100*100*4;
 	in->data_thumbnail = malloc(in->data_thumbnail_size);
 	vpicJPGLoad(in);
-	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
-					in->data, 100, 100, 32, in->xrow_bytes);
-	XInitImage(in->ximage);
 
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
-	return;
+
+	vpicThumbnailCreateJPG(in);
+	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
+					in->thumbnail->data, 100, 100, 32, in->thumbnail->x_row_bytes);
+	XInitImage(in->ximage);
+
+	if (debug)
+		printf("## vpicImageAddJPG(): end\n");
 }
 
 void vpicImageAddPNG(char *dirname, char *filename) {
+	if (debug)
+		printf("\n## vpicImageAddPNG(): processing %s\n", filename);
+	
 	struct ImageNode *in = malloc(sizeof(struct ImageNode));
 	in->type = IMAGE_TYPE_PNG;
 	if (rootImageList.first_image == NULL) {
@@ -136,9 +150,20 @@ void vpicImageAddPNG(char *dirname, char *filename) {
 	
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
+
+	vpicThumbnailCreatePNG(in);
+//	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
+//					in->thumbnail->data, 100, 100, 32, in->thumbnail->x_row_bytes);
+//	XInitImage(in->ximage);
+
+	if (debug)
+		printf("## vpicImageAddPNG(): end\n");
 }
 
 void vpicImageAddDirectory(char *dirname, char *filename) {
+	if (debug)
+		printf("\n## vpicImageAddDirectory(): processing %s\n", filename);
+	
 	struct ImageNode *in = malloc(sizeof(struct ImageNode));
 	in->type = IMAGE_TYPE_DIRECTORY;
 	if (rootImageList.first_image == NULL) {
@@ -183,10 +208,17 @@ void vpicImageAddDirectory(char *dirname, char *filename) {
 
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
-	return;
+
+	vpicThumbnailCreateDirectory(in);
+
+	if (debug)
+		printf("## vpicImageAddDirectory(): end\n");
 }
 
 void vpicImageAddUnsupported(char *dirname, char *filename) {
+	if (debug)
+		printf("\n## vpicImageAddUnsupported(): processing %s\n", filename);
+	
 	struct ImageNode *in = malloc(sizeof(struct ImageNode));
 	in->type = IMAGE_TYPE_UNSUPPORTED;
 	if (rootImageList.first_image == NULL) {
@@ -221,5 +253,10 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
+
+	vpicThumbnailCreateUnsupported(in);
+
+	if (debug)
+		printf("## vpicImageAddUnsupported(): end\n");
 }
 

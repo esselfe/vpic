@@ -15,36 +15,45 @@
 const char *vpic_version_string = "0.1.7";
 unsigned int loopend;
 unsigned int use_framebuffer;
-unsigned int verbose;
+unsigned int debug, verbose;
 char *tmpdir;
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
 	{"version", no_argument, NULL, 'V'},
 	{"verbose", no_argument, NULL, 'v'},
+	{"debug", no_argument, NULL, 'D'},
 	{"fb", no_argument, NULL, 'F'},
 	{NULL, 0, NULL, 0}
 };
-static const char *short_options = "hVvF";
+static const char *short_options = "hVvDF";
 
 void ShowHelp(void) {
 	printf("vpic options:\n"
 		"\t-h, --help       Show this help message\n"
 		"\t-V, --version    Show program version and exit\n"
 		"\t-v, --verbose    Show more detailed informations\n"
-		"\t-F, --fb         Draw image on framebuffer (/dev/fb0)\n");
+		"\t-D, --debug      Show intrisict information to detect errors and bugs\n"
+		"\t-F, --fb         Draw image on framebuffer (/dev/fb0) [undeveloped]\n");
 }
 
 void vpicExit(void) {
 	char cmd[1024];
-	if (verbose)
+	if (debug)
 		sprintf(cmd, "rm -rfv %s", tmpdir);
 	else
 		sprintf(cmd, "rm -rf %s", tmpdir);
 	system(cmd);
 
-	if (verbose)
-		printf("Exiting.\n");
+	if (debug) {
+		time_t t0 = time(NULL);
+		struct tm *tm0 = localtime(&t0);
+		struct timeval tv0;
+		gettimeofday(&tv0, NULL);
+		printf("Exiting: %02d%02d%02d-%02d%02d%02d.%06ld\n", tm0->tm_year-100,
+			tm0->tm_mon+1, tm0->tm_mday, tm0->tm_hour, tm0->tm_min, tm0->tm_sec,
+			tv0.tv_usec);
+	}
 }
 
 int main(int argc, char **argv) {
@@ -62,12 +71,17 @@ int main(int argc, char **argv) {
 		case 'v':
 			verbose = 1;
 			break;
+		case 'D':
+			debug = 1;
+			verbose = 1;
+			printf("## debug enabled\n");
+			break;
 		case 'F':
 			use_framebuffer = 1;
 			break;
 		}
 	}
-	if (verbose)
+	if (verbose || debug)
 		printf("vpic %s\n", vpic_version_string);
 
 	atexit(vpicExit);
@@ -84,17 +98,20 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "vpic error: Cannot open %s: %s\n", tmpdir, strerror(errno));
 		return 1;
 	}
+	if (debug)
+		printf("## tmpdir: %s\n", tmpdir);
 
 	if (use_framebuffer)
 		vpic_fb_draw();
 	else { // render using X11
-		if (verbose)
-			printf("Initializing X11 window\n");
+		if (debug)
+			printf("## Initializing X11 window\n");
 		vpicWindowInit();
 		
 		vpicImageLoadFromDirectory("images");
 
-		printf("starting mainloop\n");
+		if (debug)
+			printf("## starting mainloop\n");
 		time_t tp = time(NULL), tc;
 		while (!loopend) {
 			++fps;

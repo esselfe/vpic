@@ -8,16 +8,7 @@
 
 #include "vpic.h"
 
-struct my_error_mgr {
-  struct jpeg_error_mgr pub;    /* "public" fields */
-
-  jmp_buf setjmp_buffer;        /* for return to caller */
-};
-typedef struct my_error_mgr *my_error_ptr;
-
-METHODDEF(void)
-my_error_exit(j_common_ptr cinfo)
-{
+void my_error_exit(j_common_ptr cinfo) {
   /* cinfo->err really points to a my_error_mgr struct, so coerce pointer */
   my_error_ptr myerr = (my_error_ptr)cinfo->err;
 
@@ -30,15 +21,15 @@ my_error_exit(j_common_ptr cinfo)
 }
 
 void vpicJPGLoad(struct ImageNode *in) {
-	if (verbose)
-		printf("\nLoading %s\n", in->filename);
+	if (debug)
+		printf("## vpicJPGLoad(): loading %s\n", in->filename);
 	
 	JSAMPLE **buffer;
 	struct my_error_mgr jerr;
 	struct jpeg_decompress_struct cinfo;
 	FILE *fp = fopen(in->fullname, "rb");
 	if (fp == NULL) {
-		fprintf(stderr, "vpic error: Cannot open %s: %s\n", 
+		fprintf(stderr, "vpic error: cannot open %s: %s\n", 
 			in->fullname, strerror(errno));
 		in->original_width = 100;
         in->original_height = 100;
@@ -89,5 +80,8 @@ void vpicJPGLoad(struct ImageNode *in) {
 	jpeg_finish_decompress(&cinfo);
 	jpeg_destroy_decompress(&cinfo);
 	fclose(fp);
+
+	if (debug)
+		printf("## vpicJPGLoad(): end\n");
 }
 
