@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #include <time.h>
+#include <sys/time.h>
+#include <sys/stat.h>
 #include <getopt.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -13,6 +16,7 @@ const char *vpic_version_string = "0.1.6";
 unsigned int loopend;
 unsigned int use_framebuffer;
 unsigned int verbose;
+char *tmpdir;
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -29,6 +33,18 @@ void ShowHelp(void) {
 		"\t-V, --version    Show program version and exit\n"
 		"\t-v, --verbose    Show more detailed informations\n"
 		"\t-F, --fb         Draw image on framebuffer (/dev/fb0)\n");
+}
+
+void vpicExit(void) {
+	char cmd[1024];
+	if (verbose)
+		sprintf(cmd, "rm -rfv %s", tmpdir);
+	else
+		sprintf(cmd, "rm -rf %s", tmpdir);
+	system(cmd);
+
+	if (verbose)
+		printf("Exiting.\n");
 }
 
 int main(int argc, char **argv) {
@@ -54,6 +70,21 @@ int main(int argc, char **argv) {
 	if (verbose)
 		printf("vpic %s\n", vpic_version_string);
 
+	atexit(vpicExit);
+
+	time_t t0 = time(NULL);
+	struct tm *tm0 = localtime(&t0);
+	struct timeval tv0;
+	gettimeofday(&tv0, NULL);
+	tmpdir = malloc(strlen("/tmp/vpic-201231-235959.999999"));
+	sprintf(tmpdir, "/tmp/vpic-%02d%02d%02d-%02d%02d%02d.%06ld", tm0->tm_year-100,
+		tm0->tm_mon+1, tm0->tm_mday, tm0->tm_hour, tm0->tm_min, tm0->tm_sec,
+		tv0.tv_usec);
+	if (mkdir(tmpdir, 0755) == -1) {
+		fprintf(stderr, "vpic error: Cannot open %s: %s\n", tmpdir, strerror(errno));
+		return 1;
+	}
+
 	if (use_framebuffer)
 		vpic_fb_draw();
 	else { // render using X11
@@ -63,6 +94,7 @@ int main(int argc, char **argv) {
 		
 		vpicImageLoadFromDirectory("images");
 
+		printf("starting mainloop\n");
 		time_t tp = time(NULL), tc;
 		while (!loopend) {
 			++fps;
@@ -75,7 +107,9 @@ int main(int argc, char **argv) {
 			    XDrawImageString(display, window, gc, 10, 10, strfps, strlen(strfps));		    
 				vpicRender();
 			}
+
 			XDrawLine(display, window, gc, 50, 10, 50+fps, 10);
+			
 			vpicEvent();
 
 			usleep(250000);
@@ -83,8 +117,6 @@ int main(int argc, char **argv) {
 		XDestroyWindow(display, window);
 		XCloseDisplay(display);
 	}
-	if (verbose)
-		printf("Exiting\n");
 
 	return 0;
 }

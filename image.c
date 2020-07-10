@@ -85,18 +85,18 @@ void vpicImageAddJPG(char *dirname, char *filename) {
 	sprintf(in->fullname, "%s/%s", dirname, filename);
 	in->filename = malloc(strlen(filename)+1);
 	sprintf(in->filename, "%s", filename);
-	in->preview_width = 100;
-	in->preview_height = 100;
+	in->thumbnail_filename = malloc(1024);
+	sprintf(in->thumbnail_filename, "%s/%s.tmp", tmpdir, filename);
 	in->original_width = 0;
 	in->original_height = 0;
 	struct stat st;
 	stat(filename, &st);
 	in->file_size = st.st_size;
-	in->data_size = 100*100*4;
-	in->data = malloc(in->data_size);
+	in->data_thumbnail_size = 100*100*4;
+	in->data_thumbnail = malloc(in->data_thumbnail_size);
 	vpicJPGLoad(in);
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
-					in->data, in->preview_width, in->preview_height, 32, 400);
+					in->data, 100, 100, 32, in->xrow_bytes);
 	XInitImage(in->ximage);
 
 	rootImageList.last_image = in;
@@ -120,12 +120,14 @@ void vpicImageAddPNG(char *dirname, char *filename) {
 	sprintf(in->fullname, "%s/%s", dirname, filename);
 	in->filename = malloc(strlen(filename)+1);
 	sprintf(in->filename, "%s", filename);
-	in->preview_width = 100;
-	in->preview_height = 100;
+	in->thumbnail_filename = malloc(1024);
+	sprintf(in->thumbnail_filename, "%s/%s.tmp", tmpdir, filename);
+	in->data_thumbnail_size = 100*100*4;
+	in->data_thumbnail = malloc(in->data_thumbnail_size);
 	
 	vpicPNGLoad(in);
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
-					in->data, in->preview_width, in->preview_height, 32, 400);
+					in->data, 100, 100, 32, in->xrow_bytes);
 	XInitImage(in->ximage);
 	
 	struct stat st;
@@ -152,8 +154,6 @@ void vpicImageAddDirectory(char *dirname, char *filename) {
 	sprintf(in->fullname, "%s/%s", dirname, filename);
 	in->filename = malloc(strlen(filename)+1);
 	sprintf(in->filename, "%s", filename);
-	in->preview_width = 100;
-	in->preview_height = 100;
 	in->original_width = 0;
 	in->original_height = 0;
 	struct stat st;
@@ -171,12 +171,14 @@ void vpicImageAddDirectory(char *dirname, char *filename) {
 	in2->data = malloc(in2->data_size);
 	vpicPNGLoad(in2);
 	snprintf(in->data, in2->data_size, "%s", in2->data);
+	in->row_bytes = in2->row_bytes;
+	in->xrow_bytes = 100*4;
 	free(in2->fullname);
 	free(in2->data);
 	free(in2);
 	
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
-					in->data, in->preview_width, in->preview_height, 32, 400);
+					in->data, 100, 100, 32, in->xrow_bytes);
 	XInitImage(in->ximage);
 
 	rootImageList.last_image = in;
@@ -200,8 +202,6 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 	sprintf(in->fullname, "%s/%s", dirname, filename);
 	in->filename = malloc(strlen(filename)+1);
 	sprintf(in->filename, "%s", filename);
-	in->preview_width = 100;
-	in->preview_height = 100;
 	in->original_width = 0;
 	in->original_height = 0;
 	struct stat st;
@@ -209,11 +209,14 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 	in->file_size = st.st_size;
 	in->data_size = 100*100*4;
 	in->data = malloc(in->data_size);
+	in->row_bytes = 100*100*3;
+	in->xrow_bytes = 100*4;
+
 	int cnt;
 	for (cnt = 0; cnt < in->data_size; cnt++)
 		in->data[cnt] = rand()%255;
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
-					in->data, in->preview_width, in->preview_height, 32, 400);
+					in->data, 100, 100, 32, in->xrow_bytes);
 	XInitImage(in->ximage);
 
 	rootImageList.last_image = in;

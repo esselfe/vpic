@@ -3,6 +3,7 @@
 
 extern const char *vpic_version_string;
 extern unsigned int loopend, verbose;
+extern char *tmpdir;
 
 // from event.c
 #include <X11/Xlib.h>
@@ -23,13 +24,13 @@ struct ImageNode {
     struct ImageNode *prev, *next;
 	char *fullname;
     char *filename;
+	char *thumbnail_filename;
 	float ratio;
-	unsigned int preview_width, preview_height;
 	unsigned int original_width, original_height;
-	unsigned int row_bytes;
+	int row_bytes, xrow_bytes;
     unsigned int file_size;
-    unsigned int data_size;
-    char *data;
+    unsigned int data_size, data_thumbnail_size;
+    char *data, *data_thumbnail;
 	XImage *ximage;
 };
 

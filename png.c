@@ -16,14 +16,13 @@ void vpicPNGLoad(struct ImageNode *in) {
 		fprintf(stderr, "vpic error: Cannot open %s: %s\n", in->filename, strerror(errno));
 		in->original_width = 100;
 		in->original_height = 100;
+		in->row_bytes = 100*3;
+		in->xrow_bytes = 100*4;
 		in->data_size = 100*100*4;
 		in->data = malloc(in->data_size);
 		int cnt;
 		for (cnt = 0; cnt < in->data_size; cnt++)
 			in->data[cnt] = rand()%255;
-		in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
-						in->data, in->preview_width, in->preview_height, 32, 400);
-		XInitImage(in->ximage);
 		return;
 	}
 	if (verbose) {
@@ -77,7 +76,8 @@ void vpicPNGLoad(struct ImageNode *in) {
 	in->original_width = png_get_image_width(png, info);
 	in->original_height = png_get_image_height(png, info);
 	in->data_size = in->original_width * in->original_height * 4;
-	unsigned int rowbytes = png_get_rowbytes(png, info);
+	in->row_bytes = png_get_rowbytes(png, info);
+	in->xrow_bytes = 100*4;
 	in->data = malloc(in->data_size);
 	memset(in->data, 0, in->data_size);
 	if (verbose) {
@@ -87,7 +87,8 @@ void vpicPNGLoad(struct ImageNode *in) {
 		printf("width: %u height: %u\n", in->original_width, in->original_height);
 		printf("image size: %u\n", in->original_width * in->original_height * components);
 		printf("data size: %u\n", in->data_size);
-		printf("row bytes: %u\n", rowbytes);
+		printf("row bytes: %u\n", in->row_bytes);
+		printf("xrow bytes: %u\n", in->xrow_bytes);
 	}
 
 	png_bytepp rows = png_get_rows(png, info);
@@ -95,7 +96,7 @@ void vpicPNGLoad(struct ImageNode *in) {
 	for (y=0; y<in->original_height; y++) {
 		png_bytep row = rows[y];
 		if (components == 3) {
-			for (x=0; x<rowbytes; x+=components, cnt+=4) {
+			for (x=0; x < in->row_bytes; x+=components, cnt+=4) {
 				in->data[cnt] = row[x+2];
 				in->data[cnt+1] = row[x+1];
 				in->data[cnt+2] = row[x];
@@ -103,7 +104,7 @@ void vpicPNGLoad(struct ImageNode *in) {
 			}
 		}
 		else if (components == 4) {
-			for (x=0; x<rowbytes; x+=components, cnt+=4) {
+			for (x=0; x < in->row_bytes; x+=components, cnt+=4) {
 				in->data[cnt] = row[x+2];
 				in->data[cnt+1] = row[x+1];
 				in->data[cnt+2] = row[x];

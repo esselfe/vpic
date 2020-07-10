@@ -14,7 +14,7 @@ void vpicRender(void) {
 	while (1) {
 		++cnt;
 		XPutImage(display, window, gc, in->ximage, 0, 0, 10*cnt + 100*cnt - 100, 20,
-			in->preview_width, in->preview_height);
+			100, 100);
 		XDrawImageString(display, window, gc, 10*cnt + 100*cnt - 100, 140,
 			in->filename, strlen(in->filename));
 
