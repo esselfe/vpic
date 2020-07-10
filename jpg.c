@@ -30,10 +30,11 @@ my_error_exit(j_common_ptr cinfo)
 }
 
 void vpicJPGLoad(struct ImageNode *in) {
-	printf("\nLoading %s\n", in->filename);
+	if (verbose)
+		printf("\nLoading %s\n", in->filename);
+	
 	JSAMPLE **buffer;
 	struct my_error_mgr jerr;
-	int row_stride;
 	struct jpeg_decompress_struct cinfo;
 	FILE *fp = fopen(in->fullname, "rb");
 	if (fp == NULL) {
@@ -41,7 +42,6 @@ void vpicJPGLoad(struct ImageNode *in) {
 			in->fullname, strerror(errno));
 		return;
 	}
-	printf("opened file\n");
 	
 	cinfo.err = jpeg_std_error(&jerr.pub);
 	jerr.pub.error_exit = my_error_exit;
@@ -55,10 +55,12 @@ void vpicJPGLoad(struct ImageNode *in) {
 	jpeg_stdio_src(&cinfo, fp);
 	jpeg_read_header(&cinfo, TRUE);
 	jpeg_start_decompress(&cinfo);
-	row_stride = cinfo.output_width * cinfo.output_components;
-	buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, 1);
-	printf("row stride: %d\n", row_stride);
-	printf("components: %u\n", cinfo.output_components);
+	in->row_bytes = cinfo.output_width * cinfo.output_components;
+	buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, in->row_bytes, 1);
+	if (verbose) {
+		printf("    row bytes: %d\n", in->row_bytes);
+		printf("    components: %u\n", cinfo.output_components);
+	}
 	
 	in->data_size = cinfo.output_width * cinfo.output_height * 4;
 	in->data = malloc(in->data_size);
@@ -66,7 +68,7 @@ void vpicJPGLoad(struct ImageNode *in) {
 	unsigned int x, cnt = 0;
 	while (cinfo.output_scanline < cinfo.output_height) {
 		jpeg_read_scanlines(&cinfo, buffer, 1);
-		for (x=0; x<row_stride; x+=3, cnt+=4) {
+		for (x=0; x < in->row_bytes; x+=3, cnt+=4) {
 			in->data[cnt] = (char)buffer[0][x];
 			in->data[cnt+1] = (char)buffer[0][x+1];
 			in->data[cnt+2] = (char)buffer[0][x+2];

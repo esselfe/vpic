@@ -26,6 +26,7 @@ struct ImageNode {
 	float ratio;
 	unsigned int preview_width, preview_height;
 	unsigned int original_width, original_height;
+	unsigned int row_bytes;
     unsigned int file_size;
     unsigned int data_size;
     char *data;

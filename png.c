@@ -8,7 +8,9 @@
 #include "vpic.h"
 
 void vpicPNGLoad(struct ImageNode *in) {
-	printf("\nLoading: %s\n", in->filename);
+	if (verbose)
+		printf("\nLoading: %s\n", in->filename);
+	
 	FILE *fp = fopen(in->fullname, "rb");
 	if (fp == NULL) {
 		fprintf(stderr, "vpic error: Cannot open %s: %s\n", in->filename, strerror(errno));
@@ -24,9 +26,11 @@ void vpicPNGLoad(struct ImageNode *in) {
 		XInitImage(in->ximage);
 		return;
 	}
-	fseek(fp, 0, SEEK_END);
-	printf("file size: %lu\n", ftell(fp));
-	fseek(fp, 0, SEEK_SET);
+	if (verbose) {
+		fseek(fp, 0, SEEK_END);
+		printf("file size: %lu\n", ftell(fp));
+		fseek(fp, 0, SEEK_SET);
+	}
 	
 	unsigned char sig[8];
 	fread(sig, 1, 8, fp);
@@ -42,44 +46,49 @@ void vpicPNGLoad(struct ImageNode *in) {
 	png_set_sig_bytes(png, 8);
 	png_init_io(png, fp);
 	png_read_png(png, info, 0, 0);
-	
-	unsigned int bit_depth = png_get_bit_depth(png, info);
-	printf("bit_depth: %u\n", bit_depth);
 
 	unsigned int components = 3, color_type = png_get_color_type(png, info);
 	switch(color_type) {
 	case PNG_COLOR_TYPE_PALETTE:
-		printf("color type: palette\n");
 		components = 3;
+		if (verbose)
+			printf("color type: palette\n");
 		break;
 	case PNG_COLOR_TYPE_RGB:
-		printf("color type: RGB\n");
 		components = 3;
+		if (verbose)
+			printf("color type: RGB\n");
 		break;
 	case PNG_COLOR_TYPE_RGB_ALPHA:
-		printf("color type: RGBA\n");
 		components = 4;
+		if (verbose)
+			printf("color type: RGBA\n");
 		break;
 	case PNG_COLOR_TYPE_GRAY_ALPHA:
-		printf("color type: gray alpha\n");
 		components = 2;
+		if (verbose)
+			printf("color type: gray alpha\n");
 		break;
 	default:
 		components = 3;
 		break;
 	}
-	printf("components: %u\n", components);
 
 	in->original_width = png_get_image_width(png, info);
 	in->original_height = png_get_image_height(png, info);
-	printf("width: %u height: %u\n", in->original_width, in->original_height);
-	printf("image size: %u\n", in->original_width * in->original_height * components);
 	in->data_size = in->original_width * in->original_height * 4;
-	printf("data size: %u\n", in->data_size);
 	unsigned int rowbytes = png_get_rowbytes(png, info);
-	printf("row bytes: %u\n", rowbytes);
 	in->data = malloc(in->data_size);
 	memset(in->data, 0, in->data_size);
+	if (verbose) {
+		unsigned int bit_depth = png_get_bit_depth(png, info);
+		printf("bit_depth: %u\n", bit_depth);
+		printf("components: %u\n", components);
+		printf("width: %u height: %u\n", in->original_width, in->original_height);
+		printf("image size: %u\n", in->original_width * in->original_height * components);
+		printf("data size: %u\n", in->data_size);
+		printf("row bytes: %u\n", rowbytes);
+	}
 
 	png_bytepp rows = png_get_rows(png, info);
 	int x, y, cnt = 0;
