@@ -209,7 +209,7 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 	in->file_size = st.st_size;
 	in->data_size = 100*100*4;
 	in->data = malloc(in->data_size);
-	in->row_bytes = 100*100*3;
+	in->row_bytes = 100*3;
 	in->xrow_bytes = 100*4;
 
 	int cnt;
@@ -222,30 +222,4 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
