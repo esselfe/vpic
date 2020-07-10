@@ -4,13 +4,16 @@
 #include <string.h>
 #include <errno.h>
 
+#include "vpic.h"
+
 void vpic_fb_draw(void) {
 	FILE *fw = fopen("/dev/fb0", "w");
 	if (fw == NULL) {
 		fprintf(stderr, "vpic error: Cannot open /dev/fb0: %s\n", strerror(errno));
 		exit(1);
 	}
-	printf("opened /dev/fb0\n");
+	if (verbose)
+		printf("opened /dev/fb0\n");
 
 	char buffer[3];
 	buffer[0] = 255;

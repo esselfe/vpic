@@ -2,7 +2,7 @@
 #define VPIC_H 1
 
 extern const char *vpic_version_string;
-extern unsigned int loopend;
+extern unsigned int loopend, verbose;
 
 // from event.c
 #include <X11/Xlib.h>

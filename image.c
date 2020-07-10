@@ -14,6 +14,9 @@
 struct ImageList rootImageList;
 
 int vpicImageLoadFromDirectory(char *dirname) {
+	if (verbose)
+		printf("vpicImageLoadFromDirectory(): Loading %s\n", dirname);
+	
 	DIR *dir = opendir(dirname);
 	if (dir == NULL) {
 		fprintf(stderr, "vpic error: Cannot open %s: %s\n", dirname, strerror(errno));
@@ -42,6 +45,8 @@ int vpicImageLoadFromDirectory(char *dirname) {
 		if (strncmp(de->d_name, ".", 1) == 0)
 			continue;
 		else if (strncmp(de->d_name, "..", 2) == 0)
+			continue;
+		else if (strncmp(de->d_name, "folder.png", 10) == 0)
 			continue;
 		
 		sprintf(full_filename, "%s/%s", dirname, de->d_name);
@@ -89,9 +94,6 @@ void vpicImageAddJPG(char *dirname, char *filename) {
 	in->file_size = st.st_size;
 	in->data_size = 100*100*4;
 	in->data = malloc(in->data_size);
-//	int cnt;
-//	for (cnt = 0; cnt < in->data_size; cnt++)
-//		in->data[cnt] = rand()%255;
 	vpicJPGLoad(in);
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
 					in->data, in->preview_width, in->preview_height, 32, 400);
@@ -159,9 +161,20 @@ void vpicImageAddDirectory(char *dirname, char *filename) {
 	in->file_size = st.st_size;
 	in->data_size = 100*100*4;
 	in->data = malloc(in->data_size);
-	int cnt;
-	for (cnt = 0; cnt < in->data_size; cnt++)
-		in->data[cnt] = rand()%255;
+
+	struct ImageNode *in2 = malloc(sizeof(struct ImageNode));
+	in2->fullname = malloc(1024);
+	sprintf(in2->fullname, "images/folder.png");
+	in2->filename = malloc(1024);
+	sprintf(in2->filename, "folder.png");
+	in2->data_size = 100*100*4;
+	in2->data = malloc(in2->data_size);
+	vpicPNGLoad(in2);
+	snprintf(in->data, in2->data_size, "%s", in2->data);
+	free(in2->fullname);
+	free(in2->data);
+	free(in2);
+	
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
 					in->data, in->preview_width, in->preview_height, 32, 400);
 	XInitImage(in->ximage);

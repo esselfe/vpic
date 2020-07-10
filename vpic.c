@@ -9,22 +9,25 @@
 
 #include "vpic.h"
 
-const char *vpic_version_string = "0.1.5";
+const char *vpic_version_string = "0.1.6";
 unsigned int loopend;
 unsigned int use_framebuffer;
+unsigned int verbose;
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
 	{"version", no_argument, NULL, 'V'},
+	{"verbose", no_argument, NULL, 'v'},
 	{"fb", no_argument, NULL, 'F'},
 	{NULL, 0, NULL, 0}
 };
-static const char *short_options = "hVF";
+static const char *short_options = "hVvF";
 
 void ShowHelp(void) {
 	printf("vpic options:\n"
 		"\t-h, --help       Show this help message\n"
 		"\t-V, --version    Show program version and exit\n"
+		"\t-v, --verbose    Show more detailed informations\n"
 		"\t-F, --fb         Draw image on framebuffer (/dev/fb0)\n");
 }
 
@@ -40,15 +43,22 @@ int main(int argc, char **argv) {
 		case 'V':
 			printf("vpic %s\n", vpic_version_string);
 			exit(0);
+		case 'v':
+			verbose = 1;
+			break;
 		case 'F':
 			use_framebuffer = 1;
 			break;
 		}
 	}
+	if (verbose)
+		printf("vpic %s\n", vpic_version_string);
 
 	if (use_framebuffer)
 		vpic_fb_draw();
 	else { // render using X11
+		if (verbose)
+			printf("Initializing X11 window\n");
 		vpicWindowInit();
 		
 		vpicImageLoadFromDirectory("images");
@@ -73,6 +83,8 @@ int main(int argc, char **argv) {
 		XDestroyWindow(display, window);
 		XCloseDisplay(display);
 	}
+	if (verbose)
+		printf("Exiting\n");
 
 	return 0;
 }
