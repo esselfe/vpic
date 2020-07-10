@@ -12,6 +12,13 @@
 void vpicThumbnailGenerate(char *src, char *dst) {
 	if (debug)
 		printf("## vpicThumbnailGenerate() start: src: %s dst: %s\n", src, dst);
+
+// try with the CLI tool instead
+char *cmd = malloc(1024);
+sprintf(cmd, "convert -colorspace RGB -resize 100x100 %s %s", src, dst);
+system(cmd);
+return;
+
 	MagickBooleanType status;
 	MagickWandGenesis();
 	MagickWand *wand = NewMagickWand();
@@ -176,11 +183,16 @@ void vpicThumbnailCreatePNG(struct ImageNode *in) {
 	png_read_png(png, info, 0, 0);
 
 	unsigned int color_type = png_get_color_type(png, info);
+	png_sPLT_tp palettes = NULL;
 	switch(color_type) {
 	case PNG_COLOR_TYPE_PALETTE:
-		tn->components = 3;
 		if (verbose)
 			printf("    color type: palette\n");
+
+		tn->components = 3;
+		printf("    palette max: %d\n", png_get_palette_max(png, info));
+		printf("    png_get_sPLT(): %d\n", png_get_sPLT(png, info, &palettes));
+		//printf("    palette name: %s\n", palettes->name);
 		break;
 	case PNG_COLOR_TYPE_RGB:
 		tn->components = 3;
