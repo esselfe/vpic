@@ -12,7 +12,7 @@
 
 #include "vpic.h"
 
-const char *vpic_version_string = "0.1.6";
+const char *vpic_version_string = "0.1.7";
 unsigned int loopend;
 unsigned int use_framebuffer;
 unsigned int verbose;
