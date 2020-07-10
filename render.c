@@ -9,9 +9,7 @@ unsigned int fps;
 char strfps[20];
 
 void vpicRender(void) {
-    XDrawLine(display, window, gc, 50, 10, 50+fps, 10);
-
-	struct ImageNode *in = rootImageList.first_image;
+    struct ImageNode *in = rootImageList.first_image;
 	int cnt = 0;
 	while (1) {
 		++cnt;

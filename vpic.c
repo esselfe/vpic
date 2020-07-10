@@ -9,7 +9,7 @@
 
 #include "vpic.h"
 
-const char *vpic_version_string = "0.1.4";
+const char *vpic_version_string = "0.1.5";
 unsigned int loopend;
 unsigned int use_framebuffer;
 
@@ -65,6 +65,7 @@ int main(int argc, char **argv) {
 			    XDrawImageString(display, window, gc, 10, 10, strfps, strlen(strfps));		    
 				vpicRender();
 			}
+			XDrawLine(display, window, gc, 50, 10, 50+fps, 10);
 			vpicEvent();
 
 			usleep(250000);

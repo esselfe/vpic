@@ -7,57 +7,6 @@
 
 #include "vpic.h"
 
-void vpicPNGLoad2(struct ImageNode *in) {
-	png_structp	png_ptr;
-    png_infop info_ptr;
-    FILE * fp;
-    png_uint_32 width;
-    png_uint_32 height;
-    int bit_depth;
-    int color_type;
-    int interlace_method;
-    int compression_method;
-    int filter_method;
-    int j;
-    png_bytepp rows;
-    fp = fopen (in->fullname, "rb");
-    if (! fp) {
-	fprintf(stderr, "Cannot open '%s': %s\n", in->fullname, strerror (errno));
-    }
-    png_ptr = png_create_read_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if (! png_ptr) {
-	fprintf(stderr, "Cannot create PNG read structure");
-    }
-    info_ptr = png_create_info_struct (png_ptr);
-    if (! png_ptr) {
-	fprintf(stderr, "Cannot create PNG info structure");
-    }
-    png_init_io (png_ptr, fp);
-    png_read_png (png_ptr, info_ptr, 0, 0);
-    png_get_IHDR (png_ptr, info_ptr, & width, & height, & bit_depth,
-		  & color_type, & interlace_method, & compression_method,
-		  & filter_method);
-
-    rows = png_get_rows (png_ptr, info_ptr);
-    printf ("Width is %d, height is %d\n", width, height);
-    int rowbytes;
-    rowbytes = png_get_rowbytes (png_ptr, info_ptr);
-    printf ("Row bytes = %d\n", rowbytes);
-    in->data_size = width*height*4;
-    in->data = malloc(in->data_size);
-    int cnt = 0;
-    for (j = 0; j < height; j++) {
-		int i;
-		png_bytep row = rows[j];
-		for (i = 0; i < rowbytes; i+=3, cnt+=4) {
-		    in->data[cnt] = row[i+2];
-		    in->data[cnt+1] = row[i+1];
-		    in->data[cnt+2] = row[i];
-			in->data[cnt+3] = 255;
-		}
-	}
-}
-
 void vpicPNGLoad(struct ImageNode *in) {
 	printf("\nLoading: %s\n", in->filename);
 	FILE *fp = fopen(in->fullname, "rb");
@@ -75,6 +24,9 @@ void vpicPNGLoad(struct ImageNode *in) {
 		XInitImage(in->ximage);
 		return;
 	}
+	fseek(fp, 0, SEEK_END);
+	printf("file size: %lu\n", ftell(fp));
+	fseek(fp, 0, SEEK_SET);
 	
 	unsigned char sig[8];
 	fread(sig, 1, 8, fp);
@@ -89,27 +41,12 @@ void vpicPNGLoad(struct ImageNode *in) {
     }
 	png_set_sig_bytes(png, 8);
 	png_init_io(png, fp);
-//	png_read_info(png, info);
 	png_read_png(png, info, 0, 0);
-	png_uint_32 width, height;
-	int bitdepth, colortype, interlace_method, compression_method, filter_method;
-	png_get_IHDR (png, info, &width, &height, &bitdepth,
-		  &colortype, &interlace_method, &compression_method,
-		  &filter_method);
-	printf("w:%u h:%u\n", width, height);
 	
-//	unsigned int width, height;
-//	int bdepth, ctype;
-//	png_get_IHDR(png, info, &width, &height, &bdepth,
-//      &ctype, NULL, NULL, NULL);
-	
-//	if (png_get_valid(png, info, PNG_INFO_tRNS))
-//        png_set_expand(png);
-
 	unsigned int bit_depth = png_get_bit_depth(png, info);
 	printf("bit_depth: %u\n", bit_depth);
 
-	unsigned int components, color_type = png_get_color_type(png, info);
+	unsigned int components = 3, color_type = png_get_color_type(png, info);
 	switch(color_type) {
 	case PNG_COLOR_TYPE_PALETTE:
 		printf("color type: palette\n");
@@ -127,33 +64,45 @@ void vpicPNGLoad(struct ImageNode *in) {
 		printf("color type: gray alpha\n");
 		components = 2;
 		break;
+	default:
+		components = 3;
+		break;
 	}
 	printf("components: %u\n", components);
 
 	in->original_width = png_get_image_width(png, info);
 	in->original_height = png_get_image_height(png, info);
 	printf("width: %u height: %u\n", in->original_width, in->original_height);
+	printf("image size: %u\n", in->original_width * in->original_height * components);
 	in->data_size = in->original_width * in->original_height * 4;
 	printf("data size: %u\n", in->data_size);
 	unsigned int rowbytes = png_get_rowbytes(png, info);
 	printf("row bytes: %u\n", rowbytes);
 	in->data = malloc(in->data_size);
 	memset(in->data, 0, in->data_size);
-	
+
 	png_bytepp rows = png_get_rows(png, info);
 	int x, y, cnt = 0;
 	for (y=0; y<in->original_height; y++) {
 		png_bytep row = rows[y];
-		for (x=0; x<rowbytes; x+=components, cnt+=4) {
-			in->data[cnt] = row[x+2];
-			in->data[cnt+1] = row[x+1];
-			in->data[cnt+2] = row[x];
-			in->data[cnt+3] = 255;
+		if (components == 3) {
+			for (x=0; x<rowbytes; x+=components, cnt+=4) {
+				in->data[cnt] = row[x+2];
+				in->data[cnt+1] = row[x+1];
+				in->data[cnt+2] = row[x];
+				in->data[cnt+3] = 255;
+			}
+		}
+		else if (components == 4) {
+			for (x=0; x<rowbytes; x+=components, cnt+=4) {
+				in->data[cnt] = row[x+2];
+				in->data[cnt+1] = row[x+1];
+				in->data[cnt+2] = row[x];
+				in->data[cnt+3] = row[x+3];
+			}
 		}
 	}
-	png_read_end(png, info);
 	
-//	png_free(png, row);
 	png_destroy_info_struct(png, &info);
 	png_destroy_read_struct(&png, NULL, NULL);
 }
