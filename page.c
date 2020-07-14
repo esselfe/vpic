@@ -38,17 +38,16 @@ struct PageLine *vpicPageAddLine(void) {
 
 void vpicPageLineAddImage(struct ImageNode *in) {
 	struct PageLine *pl;
-	if (page.first_line == NULL || (in->rank % page.images_per_line) == 0) {
+	if (page.first_line == NULL || (in->rank % page.images_per_line) == 0)
 		pl = vpicPageAddLine();
-	}
 	else
 		pl = page.last_line;
 	
-	if (pl->first_image == NULL) {
+	if (pl->first_image == NULL)
 		pl->first_image = in;
-		pl->last_image = in;
-	}
-	else
-		pl->last_image = in;
+	
+	pl->last_image = in;
+	
+	++page.total_images;
 }
 

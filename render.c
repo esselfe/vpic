@@ -28,6 +28,8 @@ void vpicRender(void) {
 				pl = pl->next;
 				if (pl->first_image != NULL)
 					in = pl->first_image;
+				else if (in->next != NULL)
+					in = in->next;
 			}
 		}
 		else if (in->next == NULL)

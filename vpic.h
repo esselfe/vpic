@@ -14,31 +14,30 @@ void vpicEvent(void);
 void vpic_fb_draw(void);
 
 // from image.c
-#define IMAGE_TYPE_JPG    1
-#define IMAGE_TYPE_PNG    2
-#define IMAGE_TYPE_DIRECTORY      3
-#define IMAGE_TYPE_UNSUPPORTED    4
+#define IMAGE_TYPE_JPG	1
+#define IMAGE_TYPE_PNG	2
+#define IMAGE_TYPE_DIRECTORY	  3
+#define IMAGE_TYPE_UNSUPPORTED	4
 
 struct ImageNode {
 	unsigned int type;
 	unsigned int rank;
-    struct ImageNode *prev, *next;
+	struct ImageNode *prev, *next;
 	struct Thumbnail *thumbnail;
-    char *filename, *fullname, *original_name;
-	char *thumbnail_filename;
+	char *filename, *fullname, *original_name;
 	float ratio;
 	unsigned int original_width, original_height;
-	int row_bytes, xrow_bytes;
-    unsigned int file_size;
-    unsigned int data_size;
-    char *data;
+	int row_bytes, x_row_bytes;
+	unsigned int file_size;
+	unsigned int data_size;
+	char *data;
 	XImage *ximage;
 	unsigned int x, y;
 };
 
 struct ImageList {
-    struct ImageNode *first_image, *last_image;
-    unsigned int image_total;
+	struct ImageNode *first_image, *last_image;
+	unsigned int image_total;
 } rootImageList;
 
 int vpicImageLoadFromDirectory(char *dirname);
@@ -52,9 +51,9 @@ void vpicImageLoadDataPNG(struct ImageNode *in);
 #include <jpeglib.h>
 #include <setjmp.h>
 struct my_error_mgr {
-  struct jpeg_error_mgr pub;    /* "public" fields */
+  struct jpeg_error_mgr pub;	/* "public" fields */
 
-  jmp_buf setjmp_buffer;        /* for return to caller */
+  jmp_buf setjmp_buffer;		/* for return to caller */
 };
 typedef struct my_error_mgr *my_error_ptr;
 void my_error_exit(j_common_ptr cinfo);
@@ -71,7 +70,7 @@ struct PageLine {
 struct Page {
 	struct PageLine *first_line, *last_line;
 	unsigned int rank, images_per_line,
-		total_lines;
+		total_lines, total_images;
 };
 extern struct Page page;
 

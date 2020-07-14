@@ -83,6 +83,7 @@ void vpicCalcXY(struct ImageNode *in) {
 		in->x -= (winW/110+2)*110;
 	
 	in->y = 20+( ((in->rank-1)+(winW/110))/(winW/110) * (110*((in->rank+110)/110)) )-110;
+
 	if (debug) {
 		printf("  image rank: %u x: %u y: %u\n", in->rank, in->x, in->y);
 		printf("## vpicCalcXY(): end\n");
@@ -218,24 +219,33 @@ void vpicImageAddDirectory(char *dirname, char *filename) {
 
 	struct ImageNode *in2 = malloc(sizeof(struct ImageNode));
 	in2->fullname = malloc(1024);
-	sprintf(in2->fullname, "images/folder.png");
+	sprintf(in2->fullname, "images/folder.jpg");
 	in2->filename = malloc(1024);
-	sprintf(in2->filename, "folder.png");
+	sprintf(in2->filename, "folder.jpg");
 	in2->data_size = 100*100*4;
 	in2->data = malloc(in2->data_size);
-	vpicPNGLoad(in2);
+
+	vpicJPGLoad(in2);
 	snprintf(in->data, in2->data_size, "%s", in2->data);
 	in->row_bytes = in2->row_bytes;
-	in->xrow_bytes = 100*4;
+	in->x_row_bytes = 100*4; // 100 pixel * RGBA channels
+	
 	free(in2->fullname);
 	free(in2->data);
 	free(in2);
 	
-	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
-					in->data, 100, 100, 32, in->xrow_bytes);
-	XInitImage(in->ximage);
+//	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
+//					in->data, 100, 100, 32, in->x_row_bytes);
+//	XInitImage(in->ximage);
 
-	vpicThumbnailCreateDirectory(in);
+	vpicThumbnailCreateJPG(in);
+	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
+					in->thumbnail->data, 100, 100, 32, 100*4);
+	if (in->ximage == NULL) {
+		printf("ximage == NULL!\n");
+		exit(1);
+	}
+	XInitImage(in->ximage);
 
 	vpicCalcXY(in);
 
@@ -264,6 +274,8 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 		in->rank = rootImageList.last_image->rank + 1;
 		in->prev = rootImageList.last_image;
 	}
+	rootImageList.last_image = in;
+	++rootImageList.image_total;
 	in->next = NULL;
 	in->original_name = malloc(strlen(filename)+1);
 	 sprintf(in->original_name, "%s", filename);
@@ -274,7 +286,7 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 	in->original_width = 0;
 	in->original_height = 0;
 	in->row_bytes = 100*3;
-	in->xrow_bytes = 100*4;
+	in->x_row_bytes = 100*4;
 	struct stat st;
 	stat(filename, &st);
 	in->file_size = st.st_size;
@@ -285,15 +297,12 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 	for (cnt = 0; cnt < in->data_size; cnt++)
 		in->data[cnt] = rand()%255;
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
-					in->data, 100, 100, 32, in->xrow_bytes);
+					in->data, 100, 100, 32, in->x_row_bytes);
 	XInitImage(in->ximage);
 
 	vpicThumbnailCreateUnsupported(in);
 
 	vpicCalcXY(in);
-
-	rootImageList.last_image = in;
-	++rootImageList.image_total;
 
 	vpicPageLineAddImage(in);
 

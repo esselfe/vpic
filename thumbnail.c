@@ -121,7 +121,7 @@ void vpicThumbnailCreateJPG(struct ImageNode *in) {
 		printf("  width: %u height: %u\n", tn->width, tn->height);
 		printf("  components: %u\n", tn->components);
 		printf("  row_bytes: %d\n", tn->row_bytes);
-		printf("  x_row_bytes: %d\n", tn->row_bytes);
+		printf("  x_row_bytes: %d\n", tn->x_row_bytes);
 		printf("  data_size: %u\n", tn->data_size);
 	}
 
@@ -279,7 +279,7 @@ void vpicThumbnailCreatePNG(struct ImageNode *in) {
 		printf("  width: %u height: %u\n", tn->width, tn->height);
 		printf("  components: %u\n", tn->components);
 		printf("  row bytes: %u\n", tn->row_bytes);
-		printf("  xrow bytes: %u\n", tn->x_row_bytes);
+		printf("  x_row bytes: %u\n", tn->x_row_bytes);
 		printf("  image size: %u\n", tn->width * tn->height * tn->components);
 		printf("  file size: %u\n", tn->file_size);
 		printf("  data size: %u\n", tn->data_size);

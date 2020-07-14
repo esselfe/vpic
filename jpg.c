@@ -34,7 +34,7 @@ void vpicJPGLoad(struct ImageNode *in) {
 		in->original_width = 100;
 		in->original_height = 100;
 		in->row_bytes = 100*3;
-		in->xrow_bytes = 100*4;
+		in->x_row_bytes = 100*4;
 		in->data_size = 100*100*4;
 		in->data = malloc(in->data_size);
 		int cnt;
@@ -57,9 +57,9 @@ void vpicJPGLoad(struct ImageNode *in) {
 	jpeg_start_decompress(&cinfo);
 
 	in->row_bytes = cinfo.output_width * cinfo.output_components;
-	in->xrow_bytes = 100*4;
+	in->x_row_bytes = 100*4;
 	buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, in->row_bytes, 1);
-	if (verbose) {
+	if (debug) {
 		printf("	row bytes: %d\n", in->row_bytes);
 		printf("	components: %u\n", cinfo.output_components);
 	}

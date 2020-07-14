@@ -110,22 +110,30 @@ int main(int argc, char **argv) {
 		
 		vpicImageLoadFromDirectory("images");
 
-		if (debug)
+		if (verbose && !debug)
+			printf("%u items total\n", page.total_images);
+		else if (debug) {
+			printf("## main(): %u items total\n", page.total_images);
 			printf("## starting mainloop\n");
+		}
 		time_t tp = time(NULL), tc;
 		while (!loopend) {
 			++fps;
 			tc = time(NULL);
 			if (tc > tp) {
 				tp = tc;
-				sprintf(strfps, "%u fps", fps);
 				fps = 0;
-				XClearArea(display, window, 10, 9, 200, 3, False);
-				XDrawImageString(display, window, gc, 10, 10, strfps, strlen(strfps));			
-				vpicRender();
+				if (debug) {
+					sprintf(strfps, "%u fps", fps);
+					XClearArea(display, window, 10, 9, 200, 3, False);
+					XDrawImageString(display, window, gc, 10, 10, strfps, strlen(strfps));
+				}
 			}
 
-			XDrawLine(display, window, gc, 50, 10, 50+fps, 10);
+			vpicRender();
+
+			if (debug)
+				XDrawLine(display, window, gc, 50, 10, 50+fps, 10);
 			
 			vpicEvent();
 

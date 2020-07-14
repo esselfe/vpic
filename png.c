@@ -17,7 +17,7 @@ void vpicPNGLoad(struct ImageNode *in) {
 		in->original_width = 100;
 		in->original_height = 100;
 		in->row_bytes = 100*3;
-		in->xrow_bytes = 100*4;
+		in->x_row_bytes = 100*4;
 		in->data_size = 100*100*4;
 		in->data = malloc(in->data_size);
 		int cnt;
@@ -45,22 +45,22 @@ void vpicPNGLoad(struct ImageNode *in) {
 	switch(color_type) {
 	case PNG_COLOR_TYPE_PALETTE:
 		components = 3;
-		if (verbose)
+		if (debug)
 			printf("	color type: palette\n");
 		break;
 	case PNG_COLOR_TYPE_RGB:
 		components = 3;
-		if (verbose)
+		if (debug)
 			printf("	color type: RGB\n");
 		break;
 	case PNG_COLOR_TYPE_RGB_ALPHA:
 		components = 4;
-		if (verbose)
+		if (debug)
 			printf("	color type: RGBA\n");
 		break;
 	case PNG_COLOR_TYPE_GRAY_ALPHA:
 		components = 2;
-		if (verbose)
+		if (debug)
 			printf("	color type: gray alpha\n");
 		break;
 	default:
@@ -72,10 +72,10 @@ void vpicPNGLoad(struct ImageNode *in) {
 	in->original_height = png_get_image_height(png, info);
 	in->data_size = in->original_width * in->original_height * 4;
 	in->row_bytes = png_get_rowbytes(png, info);
-	in->xrow_bytes = 100*4;
+	in->x_row_bytes = 100*4;
 	in->data = malloc(in->data_size);
 	memset(in->data, 0, in->data_size);
-	if (verbose) {
+	if (debug) {
 		unsigned int bit_depth = png_get_bit_depth(png, info);
 		printf("	bit_depth: %u\n", bit_depth);
 		printf("	components: %u\n", components);
@@ -83,7 +83,7 @@ void vpicPNGLoad(struct ImageNode *in) {
 		printf("	image size: %u\n", in->original_width * in->original_height * components);
 		printf("	data size: %u\n", in->data_size);
 		printf("	row bytes: %u\n", in->row_bytes);
-		printf("	xrow bytes: %u\n", in->xrow_bytes);
+		printf("	x_row bytes: %u\n", in->x_row_bytes);
 	}
 
 	png_bytepp rows = png_get_rows(png, info);
