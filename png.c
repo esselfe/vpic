@@ -127,9 +127,12 @@ void vpicPNGtoJPG(struct ImageNode *in) {
 	
 	sprintf(cmd, "convert %s %s", in->fullname, in->filename);
 	system(cmd);
-	
-	sprintf(cmd, "file %s", in->filename);
-	system(cmd);
+
+	if (debug) {
+		sprintf(cmd, "echo -e \"  output of 'file %s':\\n\"; file %s",
+			in->filename, in->filename);
+		system(cmd);
+	}
 
 	free(cmd);
 

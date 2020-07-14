@@ -61,6 +61,23 @@ void my_error_exit(j_common_ptr cinfo);
 
 void vpicJPGLoad(struct ImageNode *in);
 
+// from page.c
+struct PageLine {
+	struct PageLine *prev, *next;
+	struct ImageNode *first_image, *last_image;
+	unsigned int rank, x, y;
+};
+
+struct Page {
+	struct PageLine *first_line, *last_line;
+	unsigned int rank, images_per_line,
+		total_lines;
+};
+extern struct Page page;
+
+struct PageLine *vpicPageAddLine(void);
+void vpicPageLineAddImage(struct ImageNode *in);
+
 // from png.c
 void vpicPNGLoad(struct ImageNode *in);
 void vpicPNGtoJPG(struct ImageNode *in);

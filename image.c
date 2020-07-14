@@ -74,13 +74,19 @@ int vpicImageLoadFromDirectory(char *dirname) {
 }
 
 void vpicCalcXY(struct ImageNode *in) {
+	if (debug)
+		printf("## vpicCalcXY(): start\n");
+	
 	in->x = 10+( (((in->rank-1)+(winW/110))/(winW/110) * 110) +
 		((in->rank-((in->rank-1+(winW/110))/(winW/110)))*110) )-110;
 	if (in->x > 110 && in->x-110 > winW)
 		in->x -= (winW/110+2)*110;
 	
 	in->y = 20+( ((in->rank-1)+(winW/110))/(winW/110) * (110*((in->rank+110)/110)) )-110;
-	printf("\n\n\nrank: %u x: %u y: %u\n\n\n", in->rank, in->x, in->y);
+	if (debug) {
+		printf("  image rank: %u x: %u y: %u\n", in->rank, in->x, in->y);
+		printf("## vpicCalcXY(): end\n");
+	}
 }
 
 void vpicImageAddJPG(char *dirname, char *filename) {
@@ -124,6 +130,8 @@ void vpicImageAddJPG(char *dirname, char *filename) {
 
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
+
+	vpicPageLineAddImage(in);
 
 	if (debug)
 		printf("## vpicImageAddJPG(): end\n");
@@ -170,6 +178,8 @@ void vpicImageAddPNG(char *dirname, char *filename) {
 
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
+
+	vpicPageLineAddImage(in);
 
 	if (debug)
 		printf("## vpicImageAddPNG(): end\n");
@@ -232,6 +242,8 @@ void vpicImageAddDirectory(char *dirname, char *filename) {
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
 
+	vpicPageLineAddImage(in);
+
 	if (debug)
 		printf("## vpicImageAddDirectory(): end\n");
 }
@@ -282,6 +294,8 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
+
+	vpicPageLineAddImage(in);
 
 	if (debug)
 		printf("## vpicImageAddUnsupported(): end\n");

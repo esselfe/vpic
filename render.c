@@ -9,7 +9,9 @@ unsigned int fps;
 char strfps[20];
 
 void vpicRender(void) {
-	struct ImageNode *in = rootImageList.first_image;
+	struct PageLine *pl = page.first_line;
+	//struct ImageNode *in = rootImageList.first_image;
+	struct ImageNode *in = pl->first_image;
 	int cnt = 0;
 	while (1) {
 		++cnt;
@@ -19,7 +21,16 @@ void vpicRender(void) {
 		XDrawImageString(display, window, gc, 10*cnt + 100*cnt - 100, 140,
 			in->original_name, strlen(in->original_name));
 
-		if (in->next == NULL)
+		if (in->next == pl->last_image) {
+			if (pl->next == NULL)
+				break;
+			else {
+				pl = pl->next;
+				if (pl->first_image != NULL)
+					in = pl->first_image;
+			}
+		}
+		else if (in->next == NULL)
 			break;
 		else
 			in = in->next;
