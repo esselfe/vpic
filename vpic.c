@@ -30,11 +30,11 @@ static const char *short_options = "hVvDF";
 
 void ShowHelp(void) {
 	printf("vpic options:\n"
-		"\t-h, --help       Show this help message\n"
-		"\t-V, --version    Show program version and exit\n"
-		"\t-v, --verbose    Show more detailed informations\n"
-		"\t-D, --debug      Show intrisict information to detect errors and bugs\n"
-		"\t-F, --fb         Draw image on framebuffer (/dev/fb0) [undeveloped]\n");
+		"\t-h, --help	   Show this help message\n"
+		"\t-V, --version	Show program version and exit\n"
+		"\t-v, --verbose	Show more detailed informations\n"
+		"\t-D, --debug	  Show intrisict information to detect errors and bugs\n"
+		"\t-F, --fb		 Draw image on framebuffer (/dev/fb0) [undeveloped]\n");
 }
 
 void vpicExit(void) {
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 				sprintf(strfps, "%u fps", fps);
 				fps = 0;
 				XClearArea(display, window, 10, 9, 200, 3, False);
-			    XDrawImageString(display, window, gc, 10, 10, strfps, strlen(strfps));		    
+				XDrawImageString(display, window, gc, 10, 10, strfps, strlen(strfps));			
 				vpicRender();
 			}
 

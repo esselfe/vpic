@@ -25,11 +25,6 @@ void vpicPNGLoad(struct ImageNode *in) {
 			in->data[cnt] = rand()%255;
 		return;
 	}
-	if (verbose) {
-		fseek(fp, 0, SEEK_END);
-		printf("file size: %lu\n", ftell(fp));
-		fseek(fp, 0, SEEK_SET);
-	}
 	
 	unsigned char sig[8];
 	fread(sig, 1, 8, fp);
@@ -39,9 +34,9 @@ void vpicPNGLoad(struct ImageNode *in) {
 	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	png_infop info = png_create_info_struct(png);
 	if (setjmp(png_jmpbuf(png))) {
-        png_destroy_read_struct(&png, &info, NULL);
-        return;
-    }
+		png_destroy_read_struct(&png, &info, NULL);
+		return;
+	}
 	png_set_sig_bytes(png, 8);
 	png_init_io(png, fp);
 	png_read_png(png, info, 0, 0);
@@ -51,22 +46,22 @@ void vpicPNGLoad(struct ImageNode *in) {
 	case PNG_COLOR_TYPE_PALETTE:
 		components = 3;
 		if (verbose)
-			printf("    color type: palette\n");
+			printf("	color type: palette\n");
 		break;
 	case PNG_COLOR_TYPE_RGB:
 		components = 3;
 		if (verbose)
-			printf("    color type: RGB\n");
+			printf("	color type: RGB\n");
 		break;
 	case PNG_COLOR_TYPE_RGB_ALPHA:
 		components = 4;
 		if (verbose)
-			printf("    color type: RGBA\n");
+			printf("	color type: RGBA\n");
 		break;
 	case PNG_COLOR_TYPE_GRAY_ALPHA:
 		components = 2;
 		if (verbose)
-			printf("    color type: gray alpha\n");
+			printf("	color type: gray alpha\n");
 		break;
 	default:
 		components = 3;
@@ -118,5 +113,29 @@ void vpicPNGLoad(struct ImageNode *in) {
 
 	if (debug)
 		printf("## vpicPNGLoad(): end\n");
+}
+
+void vpicPNGtoJPG(struct ImageNode *in) {
+	char *cmd = malloc(1024);
+	sprintf(in->filename, "%s/%s", tmpdir, in->original_name);
+	int len = strlen(in->filename);
+	in->filename[len-1] = 'g';
+	in->filename[len-2] = 'p';
+	in->filename[len-3] = 'j';
+	if (debug)
+		printf("## vpicPNGtoJPG(): src: %s dst: %s\n", in->fullname, in->filename);
+	
+	sprintf(cmd, "convert %s %s", in->fullname, in->filename);
+	system(cmd);
+	
+	sprintf(cmd, "file %s", in->filename);
+	system(cmd);
+
+	free(cmd);
+
+	if (debug)
+		printf("## vpicPNGtoJPG(): end\n");
+
+	return;
 }
 

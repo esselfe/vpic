@@ -21,17 +21,19 @@ void vpic_fb_draw(void);
 
 struct ImageNode {
 	unsigned int type;
+	unsigned int rank;
     struct ImageNode *prev, *next;
 	struct Thumbnail *thumbnail;
-    char *filename, *fullname;
+    char *filename, *fullname, *original_name;
 	char *thumbnail_filename;
 	float ratio;
 	unsigned int original_width, original_height;
 	int row_bytes, xrow_bytes;
     unsigned int file_size;
-    unsigned int data_size, data_thumbnail_size;
-    char *data, *data_thumbnail;
+    unsigned int data_size;
+    char *data;
 	XImage *ximage;
+	unsigned int x, y;
 };
 
 struct ImageList {
@@ -61,6 +63,7 @@ void vpicJPGLoad(struct ImageNode *in);
 
 // from png.c
 void vpicPNGLoad(struct ImageNode *in);
+void vpicPNGtoJPG(struct ImageNode *in);
 
 // from render.c
 extern unsigned int draw_once;
@@ -74,8 +77,8 @@ struct Thumbnail {
 	char *filename, *fullname;
 	float ratio;
 	unsigned int width, height;
-	unsigned int row_bytes, x_row_bytes;
 	unsigned int components;
+	unsigned int row_bytes, x_row_bytes;
 	unsigned int file_size;
 	unsigned int data_size;
 	char *data;
