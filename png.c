@@ -77,13 +77,13 @@ void vpicPNGLoad(struct ImageNode *in) {
 	memset(in->data, 0, in->data_size);
 	if (verbose) {
 		unsigned int bit_depth = png_get_bit_depth(png, info);
-		printf("    bit_depth: %u\n", bit_depth);
-		printf("    components: %u\n", components);
-		printf("    width: %u height: %u\n", in->original_width, in->original_height);
-		printf("    image size: %u\n", in->original_width * in->original_height * components);
-		printf("    data size: %u\n", in->data_size);
-		printf("    row bytes: %u\n", in->row_bytes);
-		printf("    xrow bytes: %u\n", in->xrow_bytes);
+		printf("	bit_depth: %u\n", bit_depth);
+		printf("	components: %u\n", components);
+		printf("	width: %u height: %u\n", in->original_width, in->original_height);
+		printf("	image size: %u\n", in->original_width * in->original_height * components);
+		printf("	data size: %u\n", in->data_size);
+		printf("	row bytes: %u\n", in->row_bytes);
+		printf("	xrow bytes: %u\n", in->xrow_bytes);
 	}
 
 	png_bytepp rows = png_get_rows(png, info);

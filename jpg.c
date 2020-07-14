@@ -60,8 +60,8 @@ void vpicJPGLoad(struct ImageNode *in) {
 	in->xrow_bytes = 100*4;
 	buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, in->row_bytes, 1);
 	if (verbose) {
-		printf("    row bytes: %d\n", in->row_bytes);
-		printf("    components: %u\n", cinfo.output_components);
+		printf("	row bytes: %d\n", in->row_bytes);
+		printf("	components: %u\n", cinfo.output_components);
 	}
 	
 	in->data_size = cinfo.output_width * cinfo.output_height * 4;
