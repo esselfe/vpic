@@ -5,8 +5,8 @@ CFLAGS = -std=c11 -Wall -Werror -O0 -D_GNU_SOURCE $(IM_CFLAGS)
 LDFLAGS = -lX11 -lXext -lmagic -lpng -ljpeg $(IM_LDFLAGS)
 OBJDIR = obj
 OBJS = $(OBJDIR)/event.o $(OBJDIR)/fb.o $(OBJDIR)/image.o $(OBJDIR)/jpg.o \
-$(OBJDIR)/page.o $(OBJDIR)/png.o $(OBJDIR)/render.o $(OBJDIR)/thumbnail.o \
-$(OBJDIR)/window.o $(OBJDIR)/vpic.o
+$(OBJDIR)/page.o $(OBJDIR)/png.o $(OBJDIR)/render.o $(OBJDIR)/rgb.o \
+$(OBJDIR)/thumbnail.o $(OBJDIR)/window.o $(OBJDIR)/vpic.o
 PROGNAME = vpic
 
 .PHONY: default prepare all clean
@@ -44,6 +44,9 @@ $(OBJDIR)/png.o: png.c
 
 $(OBJDIR)/render.o: render.c
 	gcc -c $(CFLAGS) render.c -o $(OBJDIR)/render.o
+
+$(OBJDIR)/rgb.o: rgb.c
+	gcc -c $(CFLAGS) rgb.c -o $(OBJDIR)/rgb.o
 
 $(OBJDIR)/thumbnail.o: thumbnail.c
 	gcc -c $(CFLAGS) thumbnail.c -o $(OBJDIR)/thumbnail.o
