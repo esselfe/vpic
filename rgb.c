@@ -14,7 +14,7 @@ void vpicRGBtoHeader(char *varname, unsigned int size, char *data) {
 		return;
 	}
 
-	fprintf(fp, "char *%s[%u] = {\n\t", varname, size);
+	fprintf(fp, "int %s[%u] = {\n\t", varname, size);
 
 	unsigned int cnt;
 	for (cnt=0; cnt < size; cnt++) {
