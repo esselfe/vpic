@@ -9,5 +9,6 @@ program is designed to be ran from the source tree and read
 file from the "images" directory.  
 
 Note that this program is in alpha stage and only displays  
-correctly 100x100 pixel images.
+correctly RGB/RGBA PNG colorspace, not 8bit-palette/index-colors  
+due to lack of documentation.  
 
