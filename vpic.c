@@ -7,6 +7,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <getopt.h>
+#include <magic.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
@@ -56,6 +57,37 @@ void vpicExit(void) {
 		printf("Exiting: %02d%02d%02d-%02d%02d%02d.%06ld\n", tm0->tm_year-100,
 			tm0->tm_mon+1, tm0->tm_mday, tm0->tm_hour, tm0->tm_min, tm0->tm_sec,
 			tv0.tv_usec);
+	}
+}
+
+int vpicHasDirInFilename(char *filename) {
+	char *c = filename;
+	while (1) {
+		if (*c == '\0')
+			return 0;
+		else if (*c == '/' && c != filename)
+			return 1;
+
+		++c;
+	}
+}
+
+void vpicCreateThumbnailParentDir(char *filename) {
+	unsigned int len = strlen(filename), cnt;
+	char *dirname = malloc(1024);
+	memset(dirname, 0, 1024);
+	char *fullname = malloc(1024);
+	int ret;
+	for (cnt=0; cnt<len; cnt++) {
+		if (cnt > 0 && filename[cnt] == '/') {
+			sprintf(fullname, "%s/%s", tmpdir, dirname);
+			if (debug)
+				printf("## vpicCreateThumbnailParentDir(): Creating %s\n", fullname);
+			ret = mkdir(fullname, 0755);
+			if (ret < 0)
+				printf("vpic error: cannot create %s: %s\n", fullname, strerror(errno));
+		}
+		dirname[cnt] = filename[cnt];
 	}
 }
 
@@ -114,9 +146,34 @@ int main(int argc, char **argv) {
 	else { // render using X11
 		if (debug)
 			printf("## Initializing X11 window\n");
+
 		vpicWindowInit();
 		
-		vpicImageLoadFromDirectory("images");
+		if (argc == 1)
+			vpicImageLoadFromDirectory(".");
+		else {
+			struct stat st;
+			unsigned int cnt;
+			magic_t mg = magic_open(MAGIC_MIME_TYPE);
+			magic_load(mg, NULL);
+			for (cnt=1; cnt < argc; cnt++) {
+				stat(argv[cnt], &st);
+				if (st.st_mode & S_IFDIR)
+					vpicImageLoadFromDirectory(argv[cnt]);
+				else {
+					if (vpicHasDirInFilename(argv[cnt]))
+						vpicCreateThumbnailParentDir(argv[cnt]);
+		        	char *mgstr = (char *)magic_file(mg, argv[cnt]);
+		            if (strncmp(mgstr, "image/png", 9) == 0)
+		                vpicImageAddPNG("./", argv[cnt]);
+		            else if (strncmp(mgstr, "image/jpeg", 10) == 0)
+		                vpicImageAddJPG("./", argv[cnt]);
+		            else
+		                vpicImageAddUnsupported("./", argv[cnt]);
+				}
+			}
+			magic_close(mg);
+		}
 
 		if (verbose && !debug)
 			printf("%u items total\n", page.total_images);

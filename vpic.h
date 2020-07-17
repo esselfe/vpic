@@ -1,11 +1,15 @@
 #ifndef VPIC_H
 #define VPIC_H 1
 
+// from vpic.c
 extern const char *vpic_version_string;
 extern unsigned int loopend, debug, verbose;
 extern unsigned int run_rgb2hdr;
 extern char *rgb2hdr_filename;
 extern char *tmpdir;
+
+int vpicHasDirInFilename(char *filename);
+void vpicCreateThumbnailParentDir(char *filename);
 
 // from event.c
 #include <X11/Xlib.h>
