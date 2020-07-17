@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -31,6 +32,79 @@ static const struct option long_options[] = {
 	{NULL, 0, NULL, 0}
 };
 static const char *short_options = "hVvDFr:";
+
+void Msg(unsigned int type, char *msg, ...) {
+	va_list va;
+	int i;
+	unsigned int u;
+	long l;
+	unsigned long lu;
+	char c, *s;
+	float f;
+
+	void ProcessMsg() {
+		while (*msg != '\0') {
+			if (*msg == '%') {
+				++msg;
+				switch (*msg) {
+				case 'd':
+					i = va_arg(va, int);
+					printf("%d", i);
+					break;
+				case 'u':
+					u = (unsigned int)va_arg(va, unsigned);
+					printf("%u", u);
+					break;
+				case 'l':
+					++msg;
+					if (*msg == 'u') {
+						lu = (unsigned long)va_arg(va, long);
+						printf("%lu", lu);
+					}
+					else if (*msg == 'd') {
+						l = (long)va_arg(va, long);
+						printf("%ld", l);
+					}
+					break;
+				case 'c':
+					c = (char)va_arg(va, int);
+					printf("%c", c);
+					break;
+				case 's':
+					s = va_arg(va, char *);
+					printf("%s", s);
+					break;
+				case 'f':
+					f = (float)va_arg(va, double);
+					printf("%f", f);
+					break;
+				}
+			}
+			else
+				fputc(*msg, stdout);
+
+			fflush(stdout);
+			++msg;
+		}
+		printf("\n");
+	}
+
+	va_start(va, msg);
+	if (type == MSG_ALL) {
+		ProcessMsg();
+	}
+	else if (type == MSG_VERBOSE) {
+		if (verbose) {
+			ProcessMsg();
+		}
+	}
+	else if (type == MSG_DEBUG) {
+		if (debug) {
+			ProcessMsg();
+		}
+	}
+	va_end(va);
+}
 
 void ShowHelp(void) {
 	printf("vpic options:\n"
@@ -157,10 +231,18 @@ int main(int argc, char **argv) {
 			magic_t mg = magic_open(MAGIC_MIME_TYPE);
 			magic_load(mg, NULL);
 			for (cnt=1; cnt < argc; cnt++) {
+				if (argv[cnt][0] == '-') {
+					if (cnt >= argc-1) {
+						vpicImageLoadFromDirectory(".");
+						break;
+					}
+					continue;
+				}
+
 				stat(argv[cnt], &st);
 				if (st.st_mode & S_IFDIR)
 					vpicImageLoadFromDirectory(argv[cnt]);
-				else {
+				else if (st.st_mode & S_IFREG) {
 					if (vpicHasDirInFilename(argv[cnt]))
 						vpicCreateThumbnailParentDir(argv[cnt]);
 		        	char *mgstr = (char *)magic_file(mg, argv[cnt]);

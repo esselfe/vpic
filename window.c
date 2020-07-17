@@ -15,13 +15,11 @@ unsigned int winX = 100, winY = 100, winW = 800, winH = 600;
 GC gc;
 
 void vpicWindowInit(void) {
-	if (debug)
-		printf("## vpicWindowInit(): winX: %u winY: %u winW: %u winH: %u\n",
-			winX, winY, winW, winH);
+	MSGF("winX: %u winY: %u winW: %u winH: %u", winX, winY, winW, winH);
 	
 	display = XOpenDisplay(NULL);
 	if (display == NULL) {
-		fprintf(stderr, "vpic error: Cannot open an X display!\n");
+		printf("vpic error: Cannot open an X display!\n");
 		exit(1);
 	}
 
@@ -70,7 +68,6 @@ void vpicWindowInit(void) {
 	gcv.line_width = 3;
 	gc = XCreateGC(display, window, GCForeground | GCBackground | GCLineWidth, &gcv);
 
-	if (debug)
-		printf("## vpicWindowInit(): end\n");
+	MSGF("end");
 }
 

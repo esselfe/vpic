@@ -10,8 +10,7 @@
 #include "vpic.h"
 
 void vpicThumbnailGenerate(char *src, char *dst) {
-	if (debug)
-		printf("## vpicThumbnailGenerate() start: src: %s dst: %s\n", src, dst);
+	MSGF("src: %s dst: %s", src, dst);
 
 //char *cmd = malloc(1024);
 //sprintf(cmd, "convert -colorspace RGB -resize 100x100 %s %s", src, dst);
@@ -26,7 +25,7 @@ void vpicThumbnailGenerate(char *src, char *dst) {
 	
 	status = MagickReadImage(wand, src);
 	if (status == MagickFalse) {
-		fprintf(stderr, "MagickReadImage() returned false\n");
+		printf("vpic error: MagickReadImage() returned false\n");
 		return;
 	}
 
@@ -36,20 +35,18 @@ void vpicThumbnailGenerate(char *src, char *dst) {
 
 	status = MagickWriteImages(wand, dst, MagickTrue);
 	if (status == MagickFalse) {
-		fprintf(stderr, "MagickWriteImages() returned false\n");
+		printf("vpic error: MagickWriteImages() returned false\n");
 		return;
 	}
 
 	wand = DestroyMagickWand(wand);
 	MagickWandTerminus();
 
-	if (debug)
-		printf("## vpicThumbnailGenerate() end\n");
+	MSGF("end");
 }
 
 void vpicThumbnailCreateJPG(struct ImageNode *in) {
-	if (debug)
-		printf("## vpicThumbnailCreateJPG(): processing %s\n", in->filename);
+	MSGF("processing %s", in->filename);
 	
 	struct Thumbnail *tn = malloc(sizeof(struct Thumbnail));
 	in->thumbnail = tn;
@@ -72,8 +69,7 @@ void vpicThumbnailCreateJPG(struct ImageNode *in) {
 
 	FILE *fp = fopen(tn->fullname, "rb");
 	if (fp == NULL) {
-		fprintf(stderr, "vpic error: Cannot open %s: %s\n",
-			tn->fullname, strerror(errno));
+		printf("vpic error: Cannot open %s: %s\n", tn->fullname, strerror(errno));
 		tn->ratio = 1.0;
 		tn->width = 100;
 		tn->height = 100;
@@ -116,14 +112,12 @@ void vpicThumbnailCreateJPG(struct ImageNode *in) {
 	tn->data_size = cinfo.output_width * cinfo.output_height * 4;
 	tn->data = malloc(tn->data_size);
 
-	if (debug) {
-		printf("  ratio: %.1f\n", tn->ratio);
-		printf("  width: %u height: %u\n", tn->width, tn->height);
-		printf("  components: %u\n", tn->components);
-		printf("  row_bytes: %d\n", tn->row_bytes);
-		printf("  x_row_bytes: %d\n", tn->x_row_bytes);
-		printf("  data_size: %u\n", tn->data_size);
-	}
+	MSGD("  ratio: %f", tn->ratio);
+	MSGD("  width: %u height: %u", tn->width, tn->height);
+	MSGD("  components: %u", tn->components);
+	MSGD("  row_bytes: %d", tn->row_bytes);
+	MSGD("  x_row_bytes: %d", tn->x_row_bytes);
+	MSGD("  data_size: %u", tn->data_size);
 
 	unsigned int x, cnt = 0;
 	JSAMPLE **buffer = (*cinfo.mem->alloc_sarray)
@@ -150,13 +144,11 @@ void vpicThumbnailCreateJPG(struct ImageNode *in) {
 	jpeg_destroy_decompress(&cinfo);
 	fclose(fp);
 
-	if (debug)
-		printf("## vpicThumbnailCreateJPG(): end\n");
+	MSGF("end");
 }
 
 void vpicThumbnailCreatePNG(struct ImageNode *in) {
-	if (debug)
-		printf("## vpicThumbnailCreatePNG(): processing %s\n", in->filename);
+	MSGF("processing %s", in->filename);
 
 	struct Thumbnail *tn = malloc(sizeof(struct Thumbnail));
 	in->thumbnail = tn;
@@ -170,8 +162,7 @@ void vpicThumbnailCreatePNG(struct ImageNode *in) {
 	
 	FILE *fp = fopen(tn->fullname, "rb");
 	if (fp == NULL) {
-		fprintf(stderr, "vpic error: Cannot open %s: %s\n",
-			tn->fullname, strerror(errno));
+		printf("vpic error: Cannot open %s: %s\n", tn->fullname, strerror(errno));
 		tn->ratio = 1.0;
 		tn->width = 100;
 		tn->height = 100;
@@ -211,15 +202,13 @@ void vpicThumbnailCreatePNG(struct ImageNode *in) {
 	png_uint_32 ret = png_get_IHDR(png, info, &IHDR_width, &IHDR_height,
 		&IHDR_depth, &IHDR_color_type, &IHDR_interlace_method,
 		&IHDR_compression_method, &IHDR_filter_method);
-	if (debug) {
-		printf("  IHDR ret: %u\n", ret);
-		printf("  IHDR width: %u height: %u\n", IHDR_width, IHDR_height);
-		printf("  IHDR depth: %d\n", IHDR_depth);
-		printf("  IHDR color type: %d\n", IHDR_color_type);
-		printf("  IHDR interlace method: %d\n", IHDR_interlace_method);
-		printf("  IHDR compression method: %d\n", IHDR_compression_method);
-		printf("  IHDR filter method: %d\n", IHDR_filter_method);
-	}
+	MSGD("    IHDR ret: %u\n", ret);
+	MSGD("    IHDR width: %u height: %u\n", IHDR_width, IHDR_height);
+	MSGD("    IHDR depth: %d\n", IHDR_depth);
+	MSGD("    IHDR color type: %d\n", IHDR_color_type);
+	MSGD("    IHDR interlace method: %d\n", IHDR_interlace_method);
+	MSGD("    IHDR compression method: %d\n", IHDR_compression_method);
+	MSGD("    IHDR filter method: %d\n", IHDR_filter_method);
 
 	unsigned int bit_depth = png_get_bit_depth(png, info);
 	unsigned int color_type = png_get_color_type(png, info);
@@ -228,35 +217,30 @@ void vpicThumbnailCreatePNG(struct ImageNode *in) {
 	png_sPLT_tpp splt = NULL;
 	switch(color_type) {
 	case PNG_COLOR_TYPE_PALETTE:
-		if (verbose)
-			printf("  color type: palette\n");
+		MSGD("    color type: palette");
 
 		//png_set_palette_to_rgb(png);
 		tn->components = 3;
-		printf(" palette max: %d\n", png_get_palette_max(png, info));
-		printf(" png_get_PLTE(): %d\n", png_get_PLTE(png, info, palette, &num_palette));
-		printf(" num_palette: %d\n", num_palette);
-		printf(" png_get_sPLT(): %d\n", png_get_sPLT(png, info, splt));
+		MSGD("    palette max: %d", png_get_palette_max(png, info));
+		MSGD("    png_get_PLTE(): %d", png_get_PLTE(png, info, palette, &num_palette));
+		MSGD("    num_palette: %d", num_palette);
+		MSGD("    png_get_sPLT(): %d", png_get_sPLT(png, info, splt));
 		break;
 	case PNG_COLOR_TYPE_RGB:
 		tn->components = 3;
-		if (verbose)
-			printf("  color type: RGB\n");
+		MSGD("    color type: RGB");
 		break;
 	case PNG_COLOR_TYPE_RGB_ALPHA:
 		tn->components = 4;
-		if (verbose)
-			printf("  color type: RGBA\n");
+		MSGD("    color type: RGBA");
 		break;
 	case PNG_COLOR_TYPE_GRAY_ALPHA:
 		tn->components = 2;
-		if (verbose)
-			printf("  color type: gray alpha\n");
+		MSGD("    color type: gray alpha");
 		break;
 	case PNG_COLOR_TYPE_GRAY:
 		tn->components = 1;
-		if (verbose)
-			printf("  color type: gray\n");
+		MSGD("    color type: gray");
 		break;
 	default:
 		tn->components = 3;
@@ -273,17 +257,15 @@ void vpicThumbnailCreatePNG(struct ImageNode *in) {
 	tn->file_size = st.st_size;
 	tn->data_size = tn->width * tn->height * 4;
 	tn->data = malloc(tn->data_size);
-	if (debug) {
-		printf("  bit_depth: %u\n", bit_depth);
-		printf("  ratio: %.1f\n", tn->ratio);
-		printf("  width: %u height: %u\n", tn->width, tn->height);
-		printf("  components: %u\n", tn->components);
-		printf("  row bytes: %u\n", tn->row_bytes);
-		printf("  x_row bytes: %u\n", tn->x_row_bytes);
-		printf("  image size: %u\n", tn->width * tn->height * tn->components);
-		printf("  file size: %u\n", tn->file_size);
-		printf("  data size: %u\n", tn->data_size);
-	}
+	MSGD("    bit_depth: %u\n", bit_depth);
+	MSGD("    ratio: %.1f\n", tn->ratio);
+	MSGD("    width: %u height: %u\n", tn->width, tn->height);
+	MSGD("    components: %u\n", tn->components);
+	MSGD("    row bytes: %u\n", tn->row_bytes);
+	MSGD("    x_row bytes: %u\n", tn->x_row_bytes);
+	MSGD("    image size: %u\n", tn->width * tn->height * tn->components);
+	MSGD("    file size: %u\n", tn->file_size);
+	MSGD("    data size: %u\n", tn->data_size);
 
 	png_bytepp rows = png_get_rows(png, info);
 	int x, y, cnt = 0;
@@ -320,8 +302,7 @@ void vpicThumbnailCreatePNG(struct ImageNode *in) {
 	png_destroy_info_struct(png, &info);
 	png_destroy_read_struct(&png, NULL, NULL);
 
-	if (debug)
-		printf("## vpicThumbnailCreatePNG(): end\n");
+	MSGF("end");
 }
 
 void vpicThumbnailCreateDirectory(struct ImageNode *in) {

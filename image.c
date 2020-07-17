@@ -15,8 +15,7 @@
 struct ImageList rootImageList;
 
 int vpicImageLoadFromDirectory(char *dirname) {
-	if (debug)
-		printf("## vpicImageLoadFromDirectory(): loading %s\n", dirname);
+	MSGF("loading %s", dirname);
 	
 	DIR *dir = opendir(dirname);
 	if (dir == NULL) {
@@ -68,15 +67,12 @@ int vpicImageLoadFromDirectory(char *dirname) {
 
 	magic_close(mg);
 
-	if (debug)
-		printf("## vpicImageLoadFromDirectory(): end\n");
-	
+	MSGF("end");
 	return 0;
 }
 
 void vpicImageAddJPG(char *dirname, char *filename) {
-	if (debug)
-		printf("\n## vpicImageAddJPG(): processing %s/%s\n", dirname, filename);
+	MSGF("processing %s/%s", dirname, filename);
 	
 	struct ImageNode *in = malloc(sizeof(struct ImageNode));
 	in->type = IMAGE_TYPE_JPG;
@@ -90,8 +86,7 @@ void vpicImageAddJPG(char *dirname, char *filename) {
 		in->rank = rootImageList.last_image->rank + 1;
 		in->prev = rootImageList.last_image;
 	}
-	if (debug)
-		printf("    rank: %u\n", in->rank);
+	MSGD("    rank: %u", in->rank);
 	
 	in->next = NULL;
 	in->original_name = malloc(strlen(filename)+1);
@@ -109,7 +104,7 @@ void vpicImageAddJPG(char *dirname, char *filename) {
 	vpicJPGLoad(in);
 
 	if (run_rgb2hdr && strcmp(in->filename, rgb2hdr_filename) == 0) {
-		printf("saving rgb to header\n");
+		MSGD("saving rgb to header");
 		char *varname = malloc(strlen(rgb2hdr_filename)+1);
 		memset(varname, ' ', strlen(rgb2hdr_filename));
 		varname[strlen(rgb2hdr_filename)] = '\0';
@@ -126,10 +121,8 @@ void vpicImageAddJPG(char *dirname, char *filename) {
 			else
 				varname[i-1] = rgb2hdr_filename[i-1];
 		}
-		if (debug) {
-			printf("    rgb2hdr_filename: %s\n", rgb2hdr_filename);
-			printf("    varname: %s\n", varname);
-		}
+		MSGD("    rgb2hdr_filename: %s", rgb2hdr_filename);
+		MSGD("    varname: %s", varname);
 		vpicRGBtoHeader(varname, in->data_size, in->data);
 	}
 
@@ -147,13 +140,11 @@ void vpicImageAddJPG(char *dirname, char *filename) {
 	in->x = in->page_line->x + (in->line_rank-1) * 110;
 	in->y = in->page_line->y;
 
-	if (debug)
-		printf("## vpicImageAddJPG(): end\n");
+	MSGF("end\n");
 }
 
 void vpicImageAddPNG(char *dirname, char *filename) {
-	if (debug)
-		printf("\n## vpicImageAddPNG(): processing %s/%s\n", dirname, filename);
+	MSGF("processing %s/%s", dirname, filename);
 	
 	struct ImageNode *in = malloc(sizeof(struct ImageNode));
 	in->type = IMAGE_TYPE_PNG;
@@ -167,8 +158,7 @@ void vpicImageAddPNG(char *dirname, char *filename) {
 		in->rank = rootImageList.last_image->rank + 1;
 		in->prev = rootImageList.last_image;
 	}
-	if (debug)
-		printf("    rank: %u\n", in->rank);
+	MSGD("    rank: %u", in->rank);
 
 	in->next = NULL;
 	in->original_name = malloc(1024);
@@ -198,13 +188,11 @@ void vpicImageAddPNG(char *dirname, char *filename) {
 	in->x = in->page_line->x + (in->line_rank-1) * 110;
 	in->y = in->page_line->y;
 
-	if (debug)
-		printf("## vpicImageAddPNG(): end\n");
+	MSGF("end\n");
 }
 
 void vpicImageAddDirectory(char *dirname, char *filename) {
-	if (debug)
-		printf("\n## vpicImageAddDirectory(): processing %s\n", filename);
+	MSGF("processing %s/%s", dirname, filename);
 	
 	struct ImageNode *in = malloc(sizeof(struct ImageNode));
 	in->type = IMAGE_TYPE_DIRECTORY;
@@ -218,8 +206,7 @@ void vpicImageAddDirectory(char *dirname, char *filename) {
 		in->rank = rootImageList.last_image->rank + 1;
 		in->prev = rootImageList.last_image;
 	}
-	if (debug)
-		printf("    rank: %u\n", in->rank);
+	MSGD("    rank: %u", in->rank);
 	
 	in->next = NULL;
 	in->original_name = malloc(strlen(filename)+1);
@@ -249,14 +236,11 @@ void vpicImageAddDirectory(char *dirname, char *filename) {
 	in->x = in->page_line->x + (in->line_rank-1) * 110;
 	in->y = in->page_line->y;
 
-	if (debug)
-		printf("## vpicImageAddDirectory(): end\n");
+	MSGF("end\n");
 }
 
 void vpicImageAddUnsupported(char *dirname, char *filename) {
-	if (debug)
-		printf("\n## vpicImageAddUnsupported(): processing %s\n", filename);
-	
+	MSGF("processing %s/%s", dirname, filename);
 	struct ImageNode *in = malloc(sizeof(struct ImageNode));
 	in->type = IMAGE_TYPE_UNSUPPORTED;
 	if (rootImageList.first_image == NULL) {
@@ -269,8 +253,7 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 		in->rank = rootImageList.last_image->rank + 1;
 		in->prev = rootImageList.last_image;
 	}
-	if (debug)
-		printf("    rank: %u\n", in->rank);
+	MSGD("    rank: %u", in->rank);
 	
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
@@ -305,7 +288,6 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 	in->x = in->page_line->x + (in->line_rank-1) * 110;
 	in->y = in->page_line->y;
 
-	if (debug)
-		printf("## vpicImageAddUnsupported(): end\n");
+	MSGF("end\n");
 }
 

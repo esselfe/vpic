@@ -8,6 +8,21 @@ extern unsigned int run_rgb2hdr;
 extern char *rgb2hdr_filename;
 extern char *tmpdir;
 
+// Message types for Msg()
+#define MSG_ALL     0
+#define MSG_VERBOSE 1
+#define MSG_DEBUG   2
+
+#define MSGF(s,...) \
+if (debug) { \
+	printf("## %s(): ", __FUNCTION__); \
+	printf(s, ##__VA_ARGS__); \
+	printf("\n"); \
+}
+#define MSGA(s, ...) Msg(MSG_ALL, s, ##__VA_ARGS__)
+#define MSGD(s, ...) Msg(MSG_DEBUG, s, ##__VA_ARGS__)
+#define MSGV(s, ...) Msg(MSG_VERBOSE, s, ##__VA_ARGS__)
+void Msg(unsigned int type, char *msg, ...);
 int vpicHasDirInFilename(char *filename);
 void vpicCreateThumbnailParentDir(char *filename);
 

@@ -21,9 +21,7 @@ void my_error_exit(j_common_ptr cinfo) {
 }
 
 void vpicJPGLoad(struct ImageNode *in) {
-	if (debug)
-		printf("## vpicJPGLoad(): loading %s\n", in->filename);
-	
+	MSGF("loading %s", in->filename);
 	JSAMPLE **buffer;
 	struct my_error_mgr jerr;
 	struct jpeg_decompress_struct cinfo;
@@ -59,10 +57,8 @@ void vpicJPGLoad(struct ImageNode *in) {
 	in->row_bytes = cinfo.output_width * cinfo.output_components;
 	in->x_row_bytes = 100*4;
 	buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, in->row_bytes, 1);
-	if (debug) {
-		printf("	row bytes: %d\n", in->row_bytes);
-		printf("	components: %u\n", cinfo.output_components);
-	}
+	MSGD("    row bytes: %u", in->row_bytes);
+	MSGD("    components: %u", cinfo.output_components);
 	
 	in->data_size = cinfo.output_width * cinfo.output_height * 4;
 	in->data = malloc(in->data_size);
@@ -82,7 +78,6 @@ void vpicJPGLoad(struct ImageNode *in) {
 	jpeg_destroy_decompress(&cinfo);
 	fclose(fp);
 
-	if (debug)
-		printf("## vpicJPGLoad(): end\n");
+	MSGF("end");
 }
 

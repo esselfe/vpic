@@ -10,8 +10,7 @@ void vpicEvent(void) {
 		XNextEvent(display, &xevent);
 		switch (xevent.type) {
 		case KeyPress:
-			if (debug)
-				printf("key: type %d, code %d\n", xevent.type, xevent.xkey.keycode);
+			Msg(MSG_DEBUG, "key: type %d, code %d", xevent.type, xevent.xkey.keycode);
 			if (xevent.xkey.keycode == 9)
 				loopend = 1;
 			else if (xevent.xkey.keycode == 32) // o
