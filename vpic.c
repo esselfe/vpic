@@ -16,6 +16,8 @@ const char *vpic_version_string = "0.1.7";
 unsigned int loopend;
 unsigned int use_framebuffer;
 unsigned int debug, verbose;
+unsigned int run_rgb2hdr;
+char *rgb2hdr_filename;
 char *tmpdir;
 
 static const struct option long_options[] = {
@@ -24,9 +26,10 @@ static const struct option long_options[] = {
 	{"verbose", no_argument, NULL, 'v'},
 	{"debug", no_argument, NULL, 'D'},
 	{"fb", no_argument, NULL, 'F'},
+	{"rgb2hdr", required_argument, NULL, 'r'},
 	{NULL, 0, NULL, 0}
 };
-static const char *short_options = "hVvDF";
+static const char *short_options = "hVvDFr:";
 
 void ShowHelp(void) {
 	printf("vpic options:\n"
@@ -78,6 +81,11 @@ int main(int argc, char **argv) {
 			break;
 		case 'F':
 			use_framebuffer = 1;
+			break;
+		case 'r':
+			run_rgb2hdr = 1;
+			rgb2hdr_filename = malloc(strlen(optarg)+1);
+			sprintf(rgb2hdr_filename, "%s", optarg);
 			break;
 		}
 	}

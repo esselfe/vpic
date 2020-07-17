@@ -10,15 +10,13 @@ char strfps[20];
 
 void vpicRender(void) {
 	struct PageLine *pl = page.first_line;
-	//struct ImageNode *in = rootImageList.first_image;
 	struct ImageNode *in = pl->first_image;
 	int cnt = 0;
 	while (1) {
 		++cnt;
 		XPutImage(display, window, gc, in->ximage, 0, 0, 
-//			10*cnt + 100*cnt - 100, 20,
 			in->x, in->y, 100, 100);
-		XDrawImageString(display, window, gc, 10*cnt + 100*cnt - 100, 140,
+		XDrawImageString(display, window, gc, in->x, in->y + 110,
 			in->original_name, strlen(in->original_name));
 
 		if (in->next == pl->last_image) {

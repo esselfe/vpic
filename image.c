@@ -10,6 +10,7 @@
 #include <setjmp.h>
 
 #include "vpic.h"
+#include "folder_data.h"
 
 struct ImageList rootImageList;
 
@@ -73,23 +74,6 @@ int vpicImageLoadFromDirectory(char *dirname) {
 	return 0;
 }
 
-void vpicCalcXY(struct ImageNode *in) {
-	if (debug)
-		printf("## vpicCalcXY(): start\n");
-	
-	in->x = 10+( (((in->rank-1)+(winW/110))/(winW/110) * 110) +
-		((in->rank-((in->rank-1+(winW/110))/(winW/110)))*110) )-110;
-	if (in->x > 110 && in->x-110 > winW)
-		in->x -= (winW/110+2)*110;
-	
-	in->y = 20+( ((in->rank-1)+(winW/110))/(winW/110) * (110*((in->rank+110)/110)) )-110;
-
-	if (debug) {
-		printf("  image rank: %u x: %u y: %u\n", in->rank, in->x, in->y);
-		printf("## vpicCalcXY(): end\n");
-	}
-}
-
 void vpicImageAddJPG(char *dirname, char *filename) {
 	if (debug)
 		printf("\n## vpicImageAddJPG(): processing %s/%s\n", dirname, filename);
@@ -106,6 +90,9 @@ void vpicImageAddJPG(char *dirname, char *filename) {
 		in->rank = rootImageList.last_image->rank + 1;
 		in->prev = rootImageList.last_image;
 	}
+	if (debug)
+		printf("    rank: %u\n", in->rank);
+	
 	in->next = NULL;
 	in->original_name = malloc(strlen(filename)+1);
 	 sprintf(in->original_name, "%s", filename);
@@ -121,18 +108,44 @@ void vpicImageAddJPG(char *dirname, char *filename) {
 
 	vpicJPGLoad(in);
 
+	if (run_rgb2hdr && strcmp(in->filename, rgb2hdr_filename) == 0) {
+		printf("saving rgb to header\n");
+		char *varname = malloc(strlen(rgb2hdr_filename)+1);
+		memset(varname, ' ', strlen(rgb2hdr_filename));
+		varname[strlen(rgb2hdr_filename)] = '\0';
+		unsigned int i, once = 1;
+		for (i=strlen(rgb2hdr_filename); i >= 1; i--) {
+			printf("%u ", i-1); fflush(stdout);
+			if (rgb2hdr_filename[i-1] == '.') {
+				if (once) {
+					once = 0;
+					varname[i-1] = '\0';
+					strcat(varname, "_data");
+				}
+			}
+			else
+				varname[i-1] = rgb2hdr_filename[i-1];
+		}
+		if (debug) {
+			printf("    rgb2hdr_filename: %s\n", rgb2hdr_filename);
+			printf("    varname: %s\n", varname);
+		}
+		vpicRGBtoHeader(varname, in->data_size, in->data);
+	}
+
 	vpicThumbnailCreateJPG(in);
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
 		in->thumbnail->data, in->thumbnail->width, in->thumbnail->height, 
 		32, in->thumbnail->x_row_bytes);
 	XInitImage(in->ximage);
 
-	vpicCalcXY(in);
-
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
 
 	vpicPageLineAddImage(in);
+
+	in->x = in->page_line->x + (in->line_rank-1) * 110;
+	in->y = in->page_line->y;
 
 	if (debug)
 		printf("## vpicImageAddJPG(): end\n");
@@ -154,8 +167,10 @@ void vpicImageAddPNG(char *dirname, char *filename) {
 		in->rank = rootImageList.last_image->rank + 1;
 		in->prev = rootImageList.last_image;
 	}
-	in->next = NULL;
+	if (debug)
+		printf("    rank: %u\n", in->rank);
 
+	in->next = NULL;
 	in->original_name = malloc(1024);
 	 sprintf(in->original_name, "%s", filename);
 	in->fullname = malloc(1024);
@@ -175,12 +190,13 @@ void vpicImageAddPNG(char *dirname, char *filename) {
 		32, in->thumbnail->x_row_bytes);
 	XInitImage(in->ximage);
 
-	vpicCalcXY(in);
-
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
 
 	vpicPageLineAddImage(in);
+
+	in->x = in->page_line->x + (in->line_rank-1) * 110;
+	in->y = in->page_line->y;
 
 	if (debug)
 		printf("## vpicImageAddPNG(): end\n");
@@ -202,6 +218,9 @@ void vpicImageAddDirectory(char *dirname, char *filename) {
 		in->rank = rootImageList.last_image->rank + 1;
 		in->prev = rootImageList.last_image;
 	}
+	if (debug)
+		printf("    rank: %u\n", in->rank);
+	
 	in->next = NULL;
 	in->original_name = malloc(strlen(filename)+1);
 	 sprintf(in->original_name, "%s", filename);
@@ -216,43 +235,19 @@ void vpicImageAddDirectory(char *dirname, char *filename) {
 	in->file_size = st.st_size;
 	in->data_size = 100*100*4;
 	in->data = malloc(in->data_size);
-
-	struct ImageNode *in2 = malloc(sizeof(struct ImageNode));
-	in2->fullname = malloc(1024);
-	sprintf(in2->fullname, "images/folder.jpg");
-	in2->filename = malloc(1024);
-	sprintf(in2->filename, "folder.jpg");
-	in2->data_size = 100*100*4;
-	in2->data = malloc(in2->data_size);
-
-	vpicJPGLoad(in2);
-	snprintf(in->data, in2->data_size, "%s", in2->data);
-	in->row_bytes = in2->row_bytes;
+	snprintf(in->data, 100*100*4, "%s", folder_data);
+	in->row_bytes = 0;
 	in->x_row_bytes = 100*4; // 100 pixel * RGBA channels
-	
-	free(in2->fullname);
-	free(in2->data);
-	free(in2);
-	
-//	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
-//					in->data, 100, 100, 32, in->x_row_bytes);
-//	XInitImage(in->ximage);
-
-	vpicThumbnailCreateJPG(in);
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
-					in->thumbnail->data, 100, 100, 32, 100*4);
-	if (in->ximage == NULL) {
-		printf("ximage == NULL!\n");
-		exit(1);
-	}
-	XInitImage(in->ximage);
-
-	vpicCalcXY(in);
-
+					(char *)folder_data, 100, 100, 32, 100*4);
+	
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
 
 	vpicPageLineAddImage(in);
+
+	in->x = in->page_line->x + (in->line_rank-1) * 110;
+	in->y = in->page_line->y;
 
 	if (debug)
 		printf("## vpicImageAddDirectory(): end\n");
@@ -274,6 +269,9 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 		in->rank = rootImageList.last_image->rank + 1;
 		in->prev = rootImageList.last_image;
 	}
+	if (debug)
+		printf("    rank: %u\n", in->rank);
+	
 	rootImageList.last_image = in;
 	++rootImageList.image_total;
 	in->next = NULL;
@@ -302,9 +300,10 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 
 	vpicThumbnailCreateUnsupported(in);
 
-	vpicCalcXY(in);
-
 	vpicPageLineAddImage(in);
+
+	in->x = in->page_line->x + (in->line_rank-1) * 110;
+	in->y = in->page_line->y;
 
 	if (debug)
 		printf("## vpicImageAddUnsupported(): end\n");

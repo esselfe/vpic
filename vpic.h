@@ -3,6 +3,8 @@
 
 extern const char *vpic_version_string;
 extern unsigned int loopend, debug, verbose;
+extern unsigned int run_rgb2hdr;
+extern char *rgb2hdr_filename;
 extern char *tmpdir;
 
 // from event.c
@@ -21,7 +23,7 @@ void vpic_fb_draw(void);
 
 struct ImageNode {
 	unsigned int type;
-	unsigned int rank;
+	unsigned int rank, line_rank;
 	struct ImageNode *prev, *next;
 	struct Thumbnail *thumbnail;
 	char *filename, *fullname, *original_name;
@@ -31,6 +33,7 @@ struct ImageNode {
 	unsigned int file_size;
 	unsigned int data_size;
 	char *data;
+	struct PageLine *page_line;
 	XImage *ximage;
 	unsigned int x, y;
 };
@@ -87,6 +90,9 @@ extern unsigned int fps;
 extern char strfps[20];
 
 void vpicRender(void);
+
+// from rgb.c
+void vpicRGBtoHeader(char *varname, unsigned int size, char *data);
 
 // from thumbnail.c
 struct Thumbnail {
