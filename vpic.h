@@ -60,7 +60,8 @@ struct ImageNode {
 struct ImageList {
 	struct ImageNode *first_image, *last_image;
 	unsigned int image_total;
-} rootImageList;
+};
+extern struct ImageList rootImageList;
 
 int vpicImageLoadFromDirectory(char *dirname);
 void vpicImageAddJPG(char *dirname, char *filename);
