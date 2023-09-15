@@ -1,7 +1,7 @@
 
 IM_CFLAGS := $(shell pkg-config --cflags MagickWand)
 IM_LDFLAGS := $(shell pkg-config --libs MagickWand)
-CFLAGS = -std=c11 -Wall -Werror -O0 -D_GNU_SOURCE $(IM_CFLAGS)
+CFLAGS = -std=c11 -Wall -O2 -D_GNU_SOURCE $(IM_CFLAGS)
 LDFLAGS = -lX11 -lXext -lmagic -lpng -ljpeg $(IM_LDFLAGS)
 OBJDIR = obj
 OBJS = $(OBJDIR)/event.o $(OBJDIR)/fb.o $(OBJDIR)/image.o $(OBJDIR)/jpg.o \
