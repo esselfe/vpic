@@ -204,7 +204,7 @@ int main(int argc, char **argv) {
 	struct tm *tm0 = localtime(&t0);
 	struct timeval tv0;
 	gettimeofday(&tv0, NULL);
-	tmpdir = malloc(strlen("/tmp/vpic-201231-235959.999999"));
+	tmpdir = malloc(strlen("/tmp/vpic-201231-235959.999999")+32);
 	sprintf(tmpdir, "/tmp/vpic-%02d%02d%02d-%02d%02d%02d.%06ld", tm0->tm_year-100,
 		tm0->tm_mon+1, tm0->tm_mday, tm0->tm_hour, tm0->tm_min, tm0->tm_sec,
 		tv0.tv_usec);

@@ -12,7 +12,7 @@
 #include "vpic.h"
 #include "folder_data.h"
 
-struct ImageList rootImageList;
+struct ImageList root_image_list;
 
 int vpicImageLoadFromDirectory(char *dirname) {
 	MSGF("loading %s", dirname);
@@ -76,15 +76,15 @@ void vpicImageAddJPG(char *dirname, char *filename) {
 	
 	struct ImageNode *in = malloc(sizeof(struct ImageNode));
 	in->type = IMAGE_TYPE_JPG;
-	if (rootImageList.first_image == NULL) {
-		rootImageList.first_image = in;
+	if (root_image_list.first_image == NULL) {
+		root_image_list.first_image = in;
 		in->rank = 1;
 		in->prev = NULL;
 	}
 	else {
-		rootImageList.last_image->next = in;
-		in->rank = rootImageList.last_image->rank + 1;
-		in->prev = rootImageList.last_image;
+		root_image_list.last_image->next = in;
+		in->rank = root_image_list.last_image->rank + 1;
+		in->prev = root_image_list.last_image;
 	}
 	MSGD("    rank: %u", in->rank);
 	
@@ -132,8 +132,8 @@ void vpicImageAddJPG(char *dirname, char *filename) {
 		32, in->thumbnail->x_row_bytes);
 	XInitImage(in->ximage);
 
-	rootImageList.last_image = in;
-	++rootImageList.image_total;
+	root_image_list.last_image = in;
+	++root_image_list.image_total;
 
 	vpicPageLineAddImage(in);
 
@@ -148,15 +148,15 @@ void vpicImageAddPNG(char *dirname, char *filename) {
 	
 	struct ImageNode *in = malloc(sizeof(struct ImageNode));
 	in->type = IMAGE_TYPE_PNG;
-	if (rootImageList.first_image == NULL) {
-		rootImageList.first_image = in;
+	if (root_image_list.first_image == NULL) {
+		root_image_list.first_image = in;
 		in->rank = 1;
 		in->prev = NULL;
 	}
 	else {
-		rootImageList.last_image->next = in;
-		in->rank = rootImageList.last_image->rank + 1;
-		in->prev = rootImageList.last_image;
+		root_image_list.last_image->next = in;
+		in->rank = root_image_list.last_image->rank + 1;
+		in->prev = root_image_list.last_image;
 	}
 	MSGD("    rank: %u", in->rank);
 
@@ -180,8 +180,8 @@ void vpicImageAddPNG(char *dirname, char *filename) {
 		32, in->thumbnail->x_row_bytes);
 	XInitImage(in->ximage);
 
-	rootImageList.last_image = in;
-	++rootImageList.image_total;
+	root_image_list.last_image = in;
+	++root_image_list.image_total;
 
 	vpicPageLineAddImage(in);
 
@@ -196,15 +196,15 @@ void vpicImageAddDirectory(char *dirname, char *filename) {
 	
 	struct ImageNode *in = malloc(sizeof(struct ImageNode));
 	in->type = IMAGE_TYPE_DIRECTORY;
-	if (rootImageList.first_image == NULL) {
-		rootImageList.first_image = in;
+	if (root_image_list.first_image == NULL) {
+		root_image_list.first_image = in;
 		in->rank = 1;
 		in->prev = NULL;
 	}
 	else {
-		rootImageList.last_image->next = in;
-		in->rank = rootImageList.last_image->rank + 1;
-		in->prev = rootImageList.last_image;
+		root_image_list.last_image->next = in;
+		in->rank = root_image_list.last_image->rank + 1;
+		in->prev = root_image_list.last_image;
 	}
 	MSGD("    rank: %u", in->rank);
 	
@@ -228,8 +228,8 @@ void vpicImageAddDirectory(char *dirname, char *filename) {
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
 					(char *)folder_data, 100, 100, 32, 100*4);
 	
-	rootImageList.last_image = in;
-	++rootImageList.image_total;
+	root_image_list.last_image = in;
+	++root_image_list.image_total;
 
 	vpicPageLineAddImage(in);
 
@@ -243,20 +243,20 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 	MSGF("processing %s/%s", dirname, filename);
 	struct ImageNode *in = malloc(sizeof(struct ImageNode));
 	in->type = IMAGE_TYPE_UNSUPPORTED;
-	if (rootImageList.first_image == NULL) {
-		rootImageList.first_image = in;
+	if (root_image_list.first_image == NULL) {
+		root_image_list.first_image = in;
 		in->rank = 1;
 		in->prev = NULL;
 	}
 	else {
-		rootImageList.last_image->next = in;
-		in->rank = rootImageList.last_image->rank + 1;
-		in->prev = rootImageList.last_image;
+		root_image_list.last_image->next = in;
+		in->rank = root_image_list.last_image->rank + 1;
+		in->prev = root_image_list.last_image;
 	}
 	MSGD("    rank: %u", in->rank);
 	
-	rootImageList.last_image = in;
-	++rootImageList.image_total;
+	root_image_list.last_image = in;
+	++root_image_list.image_total;
 	in->next = NULL;
 	in->original_name = malloc(strlen(filename)+1);
 	 sprintf(in->original_name, "%s", filename);

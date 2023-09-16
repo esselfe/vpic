@@ -35,10 +35,10 @@ void vpicEvent(void);
 void vpic_fb_draw(void);
 
 // from image.c
-#define IMAGE_TYPE_JPG	1
-#define IMAGE_TYPE_PNG	2
-#define IMAGE_TYPE_DIRECTORY	  3
-#define IMAGE_TYPE_UNSUPPORTED	4
+#define IMAGE_TYPE_JPG          1
+#define IMAGE_TYPE_PNG          2
+#define IMAGE_TYPE_DIRECTORY    3
+#define IMAGE_TYPE_UNSUPPORTED  4
 
 struct ImageNode {
 	unsigned int type;
@@ -61,7 +61,7 @@ struct ImageList {
 	struct ImageNode *first_image, *last_image;
 	unsigned int image_total;
 };
-extern struct ImageList rootImageList;
+extern struct ImageList root_image_list;
 
 int vpicImageLoadFromDirectory(char *dirname);
 void vpicImageAddJPG(char *dirname, char *filename);
