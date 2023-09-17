@@ -9,8 +9,8 @@
 
 #include "vpic.h"
 
-void vpicThumbnailGenerate(char *src, char *dst) {
-	MSGF("src: %s dst: %s", src, dst);
+void vpicThumbnailGenerate(struct ImageNode *in) {
+	MSGF("src: %s dst: %s", in->fullname, in->thumbnail->fullname);
 
 //char *cmd = malloc(1024);
 //sprintf(cmd, "convert -colorspace RGB -resize 100x100 %s %s", src, dst);
@@ -23,17 +23,20 @@ void vpicThumbnailGenerate(char *src, char *dst) {
 	//MagickSetImageColorspace(wand, sRGBColorspace);
 	//MagickSetColorspace(wand, sRGBColorspace);
 	
-	status = MagickReadImage(wand, src);
+	status = MagickReadImage(wand, in->fullname);
 	if (status == MagickFalse) {
 		printf("vpic error: MagickReadImage() returned false\n");
 		return;
 	}
 
 	MagickResetIterator(wand);
-	while (MagickNextImage(wand) != MagickFalse)
-		MagickResizeImage(wand, 100, 100, LanczosFilter);
+	while (MagickNextImage(wand) != MagickFalse) {
+		printf ("%s w %u h %u\n", in->thumbnail->fullname,
+			in->thumbnail->width, in->thumbnail->height);
+		MagickResizeImage(wand, in->thumbnail->width, in->thumbnail->height, LanczosFilter);
+	}
 
-	status = MagickWriteImages(wand, dst, MagickTrue);
+	status = MagickWriteImages(wand, in->thumbnail->fullname, MagickTrue);
 	if (status == MagickFalse) {
 		printf("vpic error: MagickWriteImages() returned false\n");
 		return;
@@ -59,10 +62,23 @@ void vpicThumbnailCreateJPG(struct ImageNode *in) {
 	else
 		sprintf(tn->fullname, "%s", tn->filename);
 
-	if (in->type == IMAGE_TYPE_PNG)
-		vpicThumbnailGenerate(in->filename, tn->fullname);
-	else
-		vpicThumbnailGenerate(in->fullname, tn->fullname);
+	if (in->original_width > in->original_height) {
+		tn->ratio = (float)in->original_width / (float)in->original_height;
+		tn->width = 100;
+		tn->height = 100 / tn->ratio;
+	}
+	else if (in->original_width < in->original_height) {
+		tn->ratio = (float)in->original_height / (float)in->original_width;
+		tn->width = 100 / tn->ratio;
+		tn->height = 100;
+	}
+	else {
+		tn->ratio = 1.0;
+		tn->width = 100;
+		tn->height = 100;
+	}
+	
+	vpicThumbnailGenerate(in);
 
 	// Start reading the new thumbnail
 	//////////////////////////////////
@@ -100,12 +116,9 @@ void vpicThumbnailCreateJPG(struct ImageNode *in) {
 	jpeg_read_header(&cinfo, TRUE);
 	jpeg_start_decompress(&cinfo);
 
-	tn->ratio = 1.0;
-	tn->width = cinfo.output_width;
-	tn->height = cinfo.output_height;
 	tn->components = cinfo.output_components;
 	tn->row_bytes = cinfo.output_width * tn->components;
-	tn->x_row_bytes = 100*4;
+	tn->x_row_bytes = tn->width * 4;
 	struct stat st;
 	stat(tn->fullname, &st);
 	tn->file_size = st.st_size;
@@ -158,7 +171,7 @@ void vpicThumbnailCreatePNG(struct ImageNode *in) {
 	tn->fullname = malloc(strlen(tmpdir)+1+strlen(tn->filename));
 	sprintf(tn->fullname, "%s/%s", tmpdir, tn->filename);
 
-	vpicThumbnailGenerate(in->fullname, tn->fullname);
+	vpicThumbnailGenerate(in);
 	
 	FILE *fp = fopen(tn->fullname, "rb");
 	if (fp == NULL) {
@@ -247,11 +260,23 @@ void vpicThumbnailCreatePNG(struct ImageNode *in) {
 		break;
 	}
 
-	tn->ratio = 1.0;
-	tn->width = png_get_image_width(png, info);
-	tn->height = png_get_image_height(png, info);
+	unsigned int width = png_get_image_width(png, info);
+	unsigned int height = png_get_image_height(png, info);
+	if (width > height) {
+		tn->ratio = (float)width / (float)height;
+		tn->width = 100;
+		tn->height = 100 / tn->ratio;
+	} else if (width < height) {
+		tn->ratio = (float)height / (float)width;
+		tn->width = 100 / tn->ratio;
+		tn->height = 100;
+	} else {
+		tn->ratio = 1.0;
+		tn->width = 100;
+		tn->height = 100;
+	}
 	tn->row_bytes = png_get_rowbytes(png, info) * tn->components;
-	tn->x_row_bytes = 100*4;
+	tn->x_row_bytes = tn->width * 4;
 	struct stat st;
 	stat(tn->fullname, &st);
 	tn->file_size = st.st_size;

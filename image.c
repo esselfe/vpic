@@ -127,6 +127,7 @@ void vpicImageAddJPG(char *dirname, char *filename) {
 	}
 
 	vpicThumbnailCreateJPG(in);
+
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
 		in->thumbnail->data, in->thumbnail->width, in->thumbnail->height, 
 		32, in->thumbnail->x_row_bytes);
@@ -175,6 +176,7 @@ void vpicImageAddPNG(char *dirname, char *filename) {
 	in->file_size = st.st_size;
 	
 	vpicThumbnailCreateJPG(in);
+
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
 		in->thumbnail->data, in->thumbnail->width, in->thumbnail->height,
 		32, in->thumbnail->x_row_bytes);
@@ -226,7 +228,9 @@ void vpicImageAddDirectory(char *dirname, char *filename) {
 	in->row_bytes = 0;
 	in->x_row_bytes = 100*4; // 100 pixel * RGBA channels
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
-					(char *)folder_data, 100, 100, 32, 100*4);
+				(char *)folder_data,
+				in->thumbnail->width, in->thumbnail->height,
+				32, 100*4);
 	
 	root_image_list.last_image = in;
 	++root_image_list.image_total;
@@ -274,14 +278,15 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 	in->data_size = 100*100*4;
 	in->data = malloc(in->data_size);
 
+	vpicThumbnailCreateUnsupported(in);
+
 	int cnt;
 	for (cnt = 0; cnt < in->data_size; cnt++)
 		in->data[cnt] = rand()%255;
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
-					in->data, 100, 100, 32, in->x_row_bytes);
+				in->data, in->thumbnail->width,
+				in->thumbnail->height, 32, in->x_row_bytes);
 	XInitImage(in->ximage);
-
-	vpicThumbnailCreateUnsupported(in);
 
 	vpicPageLineAddImage(in);
 
@@ -290,4 +295,6 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 
 	MSGF("end\n");
 }
+
+
 

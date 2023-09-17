@@ -69,6 +69,7 @@ void vpicImageAddPNG(char *dirname, char *filename);
 void vpicImageAddDirectory(char *dirname, char *filename);
 void vpicImageAddUnsupported(char *dirname, char *filename);
 void vpicImageLoadDataPNG(struct ImageNode *in);
+void vpicImageSize(struct ImageNode *in, unsigned int *width, unsigned int *height);
 
 // from jpg.c
 #include <jpeglib.h>
@@ -127,7 +128,7 @@ struct Thumbnail {
 	XImage *ximage;
 };
 
-void vpicThumbnailGenerate(char *src, char *dst);
+void vpicThumbnailGenerate(struct ImageNode *in);
 void vpicThumbnailCreateJPG(struct ImageNode *in);
 void vpicThumbnailCreatePNG(struct ImageNode *in);
 void vpicThumbnailCreateDirectory(struct ImageNode *in);
