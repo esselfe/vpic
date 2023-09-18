@@ -166,10 +166,24 @@ void vpicThumbnailCreatePNG(struct ImageNode *in) {
 	struct Thumbnail *tn = malloc(sizeof(struct Thumbnail));
 	in->thumbnail = tn;
 
-	tn->filename = malloc(strlen(in->filename)+4);
+	tn->filename = malloc(strlen(in->filename)+5);
 	sprintf(tn->filename, "%s.tmp", in->filename);
 	tn->fullname = malloc(strlen(tmpdir)+1+strlen(tn->filename));
 	sprintf(tn->fullname, "%s/%s", tmpdir, tn->filename);
+
+	if (in->original_width > in->original_height) {
+		tn->ratio = (float)in->original_width / (float)in->original_height;
+		tn->width = 100;
+		tn->height = 100 / tn->ratio;
+	} else if (in->original_width < in->original_height) {
+		tn->ratio = (float)in->original_height / (float)in->original_width;
+		tn->width = 100 / tn->ratio;
+		tn->height = 100;
+	} else {
+		tn->ratio = 1.0;
+		tn->width = 100;
+		tn->height = 100;
+	}
 
 	vpicThumbnailGenerate(in);
 	
@@ -260,22 +274,7 @@ void vpicThumbnailCreatePNG(struct ImageNode *in) {
 		break;
 	}
 
-	unsigned int width = png_get_image_width(png, info);
-	unsigned int height = png_get_image_height(png, info);
-	if (width > height) {
-		tn->ratio = (float)width / (float)height;
-		tn->width = 100;
-		tn->height = 100 / tn->ratio;
-	} else if (width < height) {
-		tn->ratio = (float)height / (float)width;
-		tn->width = 100 / tn->ratio;
-		tn->height = 100;
-	} else {
-		tn->ratio = 1.0;
-		tn->width = 100;
-		tn->height = 100;
-	}
-	tn->row_bytes = png_get_rowbytes(png, info) * tn->components;
+	tn->row_bytes = png_get_rowbytes(png, info);
 	tn->x_row_bytes = tn->width * 4;
 	struct stat st;
 	stat(tn->fullname, &st);

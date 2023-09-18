@@ -65,12 +65,13 @@ void vpicPNGLoad(struct ImageNode *in) {
 		components = 3;
 		break;
 	}
+	components = png_get_channels(png, info);
 
 	in->original_width = png_get_image_width(png, info);
 	in->original_height = png_get_image_height(png, info);
 	in->data_size = in->original_width * in->original_height * 4;
 	in->row_bytes = png_get_rowbytes(png, info);
-	in->x_row_bytes = 100*4;
+	in->x_row_bytes = in->original_width * 4;
 	in->data = malloc(in->data_size);
 	memset(in->data, 0, in->data_size);
 	unsigned int bit_depth = png_get_bit_depth(png, info);
@@ -84,7 +85,7 @@ void vpicPNGLoad(struct ImageNode *in) {
 
 	png_bytepp rows = png_get_rows(png, info);
 	int x, y, cnt = 0;
-	for (y=0; y<in->original_height; y++) {
+	for (y=0; y < in->original_height; y++) {
 		png_bytep row = rows[y];
 		if (components == 3) {
 			for (x=0; x < in->row_bytes; x+=components, cnt+=4) {

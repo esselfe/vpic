@@ -169,13 +169,15 @@ void vpicImageAddPNG(char *dirname, char *filename) {
 	in->filename = malloc(1024);
 	 sprintf(in->filename, "%s", filename);
 	
-	vpicPNGtoJPG(in);
+	//vpicPNGtoJPG(in);
+	vpicPNGLoad(in);
 
 	struct stat st;
 	stat(filename, &st);
 	in->file_size = st.st_size;
 	
-	vpicThumbnailCreateJPG(in);
+	//vpicThumbnailCreateJPG(in);
+	vpicThumbnailCreatePNG(in);
 
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
 		in->thumbnail->data, in->thumbnail->width, in->thumbnail->height,
