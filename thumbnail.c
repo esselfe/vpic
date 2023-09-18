@@ -30,11 +30,8 @@ void vpicThumbnailGenerate(struct ImageNode *in) {
 	}
 
 	MagickResetIterator(wand);
-	while (MagickNextImage(wand) != MagickFalse) {
-		printf ("%s w %u h %u\n", in->thumbnail->fullname,
-			in->thumbnail->width, in->thumbnail->height);
+	while (MagickNextImage(wand) != MagickFalse)
 		MagickResizeImage(wand, in->thumbnail->width, in->thumbnail->height, LanczosFilter);
-	}
 
 	status = MagickWriteImages(wand, in->thumbnail->fullname, MagickTrue);
 	if (status == MagickFalse) {
@@ -330,10 +327,10 @@ void vpicThumbnailCreatePNG(struct ImageNode *in) {
 }
 
 void vpicThumbnailCreateDirectory(struct ImageNode *in) {
-
+	return;
 }
 
 void vpicThumbnailCreateUnsupported(struct ImageNode *in) {
-
+	return;
 }
 

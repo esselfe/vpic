@@ -169,14 +169,12 @@ void vpicImageAddPNG(char *dirname, char *filename) {
 	in->filename = malloc(1024);
 	 sprintf(in->filename, "%s", filename);
 	
-	//vpicPNGtoJPG(in);
 	vpicPNGLoad(in);
 
 	struct stat st;
 	stat(filename, &st);
 	in->file_size = st.st_size;
 	
-	//vpicThumbnailCreateJPG(in);
 	vpicThumbnailCreatePNG(in);
 
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
@@ -286,8 +284,7 @@ void vpicImageAddUnsupported(char *dirname, char *filename) {
 	for (cnt = 0; cnt < in->data_size; cnt++)
 		in->data[cnt] = rand()%255;
 	in->ximage = XCreateImage(display, visual, depth, ZPixmap, 0,
-				in->data, in->thumbnail->width,
-				in->thumbnail->height, 32, in->x_row_bytes);
+				in->data, 100, 100, 32, in->x_row_bytes);
 	XInitImage(in->ximage);
 
 	vpicPageLineAddImage(in);

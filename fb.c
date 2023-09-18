@@ -6,7 +6,7 @@
 
 #include "vpic.h"
 
-void vpic_fb_draw(void) {
+void vpicFBDraw(void) {
 	FILE *fw = fopen("/dev/fb0", "w");
 	if (fw == NULL) {
 		fprintf(stderr, "vpic error: Cannot open /dev/fb0: %s\n", strerror(errno));

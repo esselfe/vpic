@@ -111,27 +111,3 @@ void vpicPNGLoad(struct ImageNode *in) {
 	MSGF("end");
 }
 
-void vpicPNGtoJPG(struct ImageNode *in) {
-	char *cmd = malloc(1024);
-	sprintf(in->filename, "%s/%s", tmpdir, in->original_name);
-	int len = strlen(in->filename);
-	in->filename[len-1] = 'g';
-	in->filename[len-2] = 'p';
-	in->filename[len-3] = 'j';
-	MSGF("src: %s dst: %s", in->fullname, in->filename);
-	
-	sprintf(cmd, "convert %s %s", in->fullname, in->filename);
-	system(cmd);
-
-	if (debug) {
-		sprintf(cmd, "echo \"  output of 'file %s':\"; file %s",
-			in->filename, in->filename);
-		system(cmd);
-	}
-
-	free(cmd);
-
-	MSGF("end");
-	return;
-}
-

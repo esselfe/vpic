@@ -215,8 +215,8 @@ int main(int argc, char **argv) {
 	if (debug)
 		printf("## tmpdir: %s\n", tmpdir);
 
-	if (use_framebuffer)
-		vpic_fb_draw();
+	if (use_framebuffer) // render in tty/console (wip)
+		vpicFBDraw();
 	else { // render using X11
 		if (debug)
 			printf("## Initializing X11 window\n");
