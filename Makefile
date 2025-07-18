@@ -19,7 +19,7 @@ prepare:
 	@[ -d $(OBJDIR) ] || mkdir -v $(OBJDIR)
 
 $(PROGNAME): $(OBJS)
-	gcc $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(PROGNAME)
+	gcc $(CFLAGS) $(OBJS) -o $(PROGNAME) $(LDFLAGS)
 
 $(OBJDIR)/vpic.o: vpic.h vpic.c
 	gcc -c $(CFLAGS) vpic.c -o $(OBJDIR)/vpic.o

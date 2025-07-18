@@ -147,4 +147,6 @@ extern GC gc;
 
 void vpicWindowInit(void);
 
+void vpicFBDraw(void);
+
 #endif /* VPIC_H */
